@@ -31,4 +31,4 @@ def run_speedtest(interface: Optional[str]) -> dict:
     _l.debug(f'Exectuing "{" ".join(args)}".')
 
     result_json = subprocess.check_output(args)
-    return json.laods(result_json)
+    return json.loads(result_json)
