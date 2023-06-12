@@ -22,6 +22,6 @@ PYTHON=venv/bin/python
 $PYTHON -m pip install -r requirements.txt
 
 echo "Running data collection on screen ``speedtest-logger-collect``..."
-screen -dmS speedtest-logger-collect $PYTHON exec.py
+screen -dmS speedtest-logger-collect $PYTHON collector/exec.py
 
 exit 0

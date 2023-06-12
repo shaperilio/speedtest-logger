@@ -3,11 +3,10 @@ import logging
 import os
 import time
 import json
-from subprocess import CalledProcessError
 
-import speedtest
+import collector.speedtest as speedtest
 import config
-import log
+from utils import log
 
 log.configure_logging(log_to_file=config.log_file)
 

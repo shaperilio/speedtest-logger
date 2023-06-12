@@ -5,7 +5,7 @@ import logging
 import subprocess
 from datetime import datetime
 
-import config
+from .. import config
 
 _l = logging.getLogger(__name__)
 
