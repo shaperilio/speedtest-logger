@@ -6,6 +6,9 @@ import json
 
 import speedtest
 import config
+import log
+
+log.configure_logging()
 
 _l = logging.getLogger(__name__)
 
