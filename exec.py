@@ -3,14 +3,18 @@ import logging
 import os
 import time
 import json
+from subprocess import CalledProcessError
 
 import speedtest
 import config
 import log
 
-log.configure_logging()
+log.configure_logging(log_to_file=config.log_file)
 
 _l = logging.getLogger(__name__)
+
+if config.n_attempts < 1:
+    raise ValueError(f'Invalid value `{config.n_attempts=}`; should be at least 1.')
 
 while True:
     results_path = os.path.abspath(config.results_db)
@@ -32,8 +36,14 @@ while True:
             results.append(result)
     else:
         _l.info('Running test...')
-        result = speedtest.run_speedtest(interface=name)
-        results.append(result)
+        for a in range(config.n_attempts):
+            try:
+                result = speedtest.run_speedtest(interface=name)
+                results.append(result)
+                break
+            except CalledProcessError as e:
+                _l.error(f'[Attempt {a+1} of {config.n_attempts}] '
+                         f'`speedtest` exited with status {e.returncode}.')
     _l.debug(f'Saving results to "{results_path}".')
     with open(results_path, 'w') as f:
         f.write(json.dumps(results, sort_keys=True, indent=4))
