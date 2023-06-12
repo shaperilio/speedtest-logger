@@ -143,17 +143,17 @@ def configure_logging(log_to_file: Union[bool, str] = False,
                 color = colorama.Fore.CYAN
             else:
                 color = ""
-            self._style._fmt = self._colorfmt.format(
-                color, colorama.Style.RESET_ALL)
+            self._style._fmt = self._colorfmt.format(color, colorama.Style.RESET_ALL)
             return logging.Formatter.format(self, record)
 
         def formatTime(self, record, datefmt=None):
             created = datetime.fromtimestamp(record.created)
             return datetime.strftime(created, '%Y-%m-%d %H:%M:%S.%f')[:-3]
 
-    # configure formatter
-    logfmt = "{}[%(asctime)s|%(name)20s]{} %(message)s"
-    formatter = ColorFormatter(logfmt)
+    class FileFormatter(logging.Formatter):
+        def formatTime(self, record, datefmt=None):
+            created = datetime.fromtimestamp(record.created)
+            return datetime.strftime(created, '%Y-%m-%d %H:%M:%S.%f')[:-3]
 
     # configure stdout handler and pipe everything there.
     # First, check if we already have an stdout handler.
@@ -169,7 +169,9 @@ def configure_logging(log_to_file: Union[bool, str] = False,
     else:
         # No handler was found for stdout, so create one.
         stdouthandler = logging.StreamHandler(sys.stdout)
-        stdouthandler.setFormatter(formatter)
+        # The empty `{}` are the entry and exit points for color; you need exactly two.
+        fmt = "{}[%(asctime)s|%(name)20s]{} %(message)s"
+        stdouthandler.setFormatter(ColorFormatter(fmt))
         stdouthandler.setLevel(level)
         logger.addHandler(stdouthandler)
         _handlers.append(stdouthandler)
@@ -189,11 +191,12 @@ def configure_logging(log_to_file: Union[bool, str] = False,
                     break
         else:
             # This is a unique filename. Add the handler.
-            filehandler = RotatingFileHandler(
-                log_file, maxBytes=1024 * 1024 * 100, backupCount=5)
+            filehandler = RotatingFileHandler(log_file, maxBytes=1024 * 1024 * 100, backupCount=5)
             filehandler.setLevel(logging.DEBUG)
             # configure file handler (no colored messages here)
-            filehandler.setFormatter(logging.Formatter(logfmt.format("", "")))
+            fmt = "[%(levelname)+8s|%(asctime)s|%(name)20s] %(message)s"
+            filehandler.setFormatter(FileFormatter(fmt))
+
             logger.addHandler(filehandler)
             _handlers.append(filehandler)
 
@@ -222,7 +225,7 @@ def close_log_file(logger_name: str):
 
 def main(argv):
     # a demo
-    configure_logging()
+    configure_logging(log_to_file='test.log')
     logging.debug("This is a debug message")
     logging.info("This is an info message")
     logging.warning("This is a warning message")
