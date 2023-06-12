@@ -16,10 +16,6 @@ def run_speedtest(interface: Optional[str]) -> dict:
     if not os.path.exists(s):
         raise RuntimeError(f'Path "{config.speedtest_path}" not found.')
 
-    results_path = os.path.abspath(config.results_db)
-    _l.debug(f'Results file is at "{results_path}".')
-    os.makedirs(os.path.dirname(results_path), exist_ok=True)
-
     args: List[str] = [s]
     if hasattr(config, 'server_id'):
         args.append(f'--server-id={config.server_id}')
