@@ -11,7 +11,7 @@ _l = logging.getLogger(__name__)
 
 
 def _isotime() -> str:
-    return datetime.utcnow().isoformat()[:-3]+'Z'
+    return datetime.utcnow().isoformat()[:-4]+'Z'
 
 
 def run_speedtest(interface: Optional[str], nickname: Optional[str]) -> Dict[str, Any]:
