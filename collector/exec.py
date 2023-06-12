@@ -4,8 +4,8 @@ import os
 import time
 import json
 
-import collector.speedtest as speedtest
-import config
+import speedtest
+from .. import config
 from utils import log
 
 log.configure_logging(log_to_file=config.log_file)
