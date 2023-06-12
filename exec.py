@@ -11,7 +11,7 @@ _l = logging.getLogger(__name__)
 
 while True:
     results_path = os.path.abspath(config.results_db)
-    results: List[dict]
+    results: List[dict] = []
     if not os.path.exists(results_path):
         _l.debug(f'Results file "{results_path}" does not exist.')
         os.makedirs(os.path.dirname(results_path), exist_ok=True)
