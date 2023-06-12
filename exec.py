@@ -31,7 +31,7 @@ while True:
             result['interface_nickname'] = nickname
             results.append(result)
     else:
-        _l.info(f'Running test...')
+        _l.info('Running test...')
         result = speedtest.run_speedtest(interface=name)
         result['interface_nickname'] = 'system'
         results.append(result)
