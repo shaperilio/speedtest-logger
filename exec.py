@@ -37,7 +37,7 @@ while True:
         results.append(result)
     _l.debug(f'Saving results to "{results_path}".')
     with open(results_path, 'w') as f:
-        f.write(json.dumps(result, sort_keys=True, indent=4))
+        f.write(json.dumps(results, sort_keys=True, indent=4))
 
     _l.info(f'Waiting {config.test_interval_min} minutes to test again...')
     time.sleep(config.test_interval_min*60)
