@@ -28,12 +28,11 @@ while True:
             _l.info(
                 f'Running test on interface "{name}", a.k.a. "{nickname}"...')
             result = speedtest.run_speedtest(interface=name)
-            result['interface_nickname'] = nickname
+            result['interface']['nickname'] = nickname
             results.append(result)
     else:
         _l.info('Running test...')
         result = speedtest.run_speedtest(interface=name)
-        result['interface_nickname'] = 'system'
         results.append(result)
     _l.debug(f'Saving results to "{results_path}".')
     with open(results_path, 'w') as f:
