@@ -24,7 +24,7 @@ def run_speedtest(interface: Optional[str]) -> dict:
         args.append(f'--interface={interface}')
 
     args.append('--format=json')
-    _l.debug(f'Exectuing "{" ".join(args)}".')
+    _l.debug(f'Executing "{" ".join(args)}".')
 
     result_json = subprocess.check_output(args)
     return json.loads(result_json)
