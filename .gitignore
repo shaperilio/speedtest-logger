@@ -163,3 +163,4 @@ cython_debug/
 
 # example results
 example_results.json
+plots.html

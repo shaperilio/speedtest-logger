@@ -4,8 +4,8 @@ import json
 import dateutil.parser
 from collections import defaultdict
 
-from bokeh.plotting import figure, show
-from bokeh.models import ColumnDataSource
+from bokeh.plotting import figure, output_file, save
+from bokeh.models import ColumnDataSource, HoverTool
 
 import config
 
@@ -28,18 +28,33 @@ def plot() -> None:
         speeds[nickname]['date'].append(utc.timestamp())
         speeds[nickname]['download'].append(download_mbps)
         speeds[nickname]['upload'].append(upload_mbps)
+        speeds[nickname]['nickname'].append(nickname)
 
-    p = figure(height=300, width=800, tools="hover", toolbar_location='right',
-               x_axis_type="datetime", x_axis_location="below")
+    p = figure(height=300, width=800, tools='hover', toolbar_location='right',
+               x_axis_type='datetime', x_axis_location='below')
 
     for nickname in speeds.keys():
         source = ColumnDataSource(data={'date': speeds[nickname]['date'],
                                         nickname: speeds[nickname]['download']}
                                   )
         p.line(x='date', y=nickname, source=source)
+        p.add_tools(
+            HoverTool(
+                tooltips=[
+                    ('Date', '@date'),
+                    ('Download rate', '<div align="left">@nickname{0.0} MBps</div>'),
+                    ('Interface', '<div align="left">@nickname</div>'),
+                ],
+                formatters={
+                    '@date': 'datetime'
+                },
+                mode='vline',
+                # renderers=curves,
+            ))
     p.yaxis.axis_label = 'Download rate (Mbps)'
 
-    show(p)
+    output_file('plots.html')
+    save(p)
 
 
 plot()
