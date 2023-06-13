@@ -44,7 +44,7 @@ while True:
             _l.info(f'Running test on interface "{name}", a.k.a. "{nickname}"...')
             results.append(_run(name, nickname))
     else:
-        _l.info(f'Running test without specifying interface...')
+        _l.info('Running test without specifying interface...')
         results.append(_run(interface=None, nickname=None))
     _l.debug(f'Saving results to "{results_path}".')
     with open(results_path, 'w') as f:
