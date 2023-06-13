@@ -5,7 +5,7 @@ import time
 import json
 
 import speedtest
-from .. import config
+import config
 from utils import log
 
 log.configure_logging(log_to_file=config.log_file)
