@@ -3,10 +3,14 @@ import logging
 import os
 import time
 import json
+from datetime import datetime
 
 import speedtest
 import config
 from utils import log
+
+if isinstance(config.log_file, str):
+    os.makedirs(os.path.dirname(config.log_file), exist_ok=True)
 
 log.configure_logging(log_to_file=config.log_file)
 
@@ -16,16 +20,40 @@ if config.n_attempts < 1:
     raise ValueError(f'Invalid value `{config.n_attempts=}`; should be at least 1.')
 
 
-def _run(interface: Optional[str], nickname: Optional[str]) -> Dict[str, Any]:
-    for a in range(config.n_attempts):
-        result = speedtest.run_speedtest(interface=interface, nickname=nickname)
-        returncode = result['returnCode']
-        if returncode == 0:
-            return result
+def _isotime() -> str:
+    return datetime.utcnow().isoformat()[:-4]+'Z'
 
-        _l.error(f'[Attempt {a+1} of {config.n_attempts}] '
-                 f'`speedtest` exited with status {returncode}.')
-    raise RuntimeError(f'Failed to run after {config.n_attempts} tries.')
+
+def _run(interface: Optional[str], nickname: Optional[str]) -> Dict[str, Any]:
+    result: Dict[str, Any] = {}
+
+    result['timestamp'] = _isotime()
+    if interface is None:
+        result['interface'] = 'none'
+    else:
+        result['interface'] = interface
+
+    if interface is not None and nickname is None:
+        result['nickname'] = interface
+    else:
+        result['nickname'] = nickname
+
+    try:
+        for a in range(config.n_attempts):
+            returncode, output = speedtest.run_speedtest(interface=interface)
+            result['returnCode'] = returncode
+            if returncode == 0:
+                result['output'] = output
+                return result
+
+            _l.error(f'[Attempt {a+1} of {config.n_attempts}] '
+                     f'`speedtest` exited with status {returncode}.\n{output}')
+        raise RuntimeError(f'Failed to run after {config.n_attempts} tries.')
+    except Exception as e:
+        _l.exception(e)
+        result['output'] = {'exception': {'type': type(e).__name__, 'message': str(e)}}
+        result['returnCode'] = -1
+        return result
 
 
 while True:
