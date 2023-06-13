@@ -47,7 +47,7 @@ def _latency_stats(latency: Dict[str, float]) -> str:
     return f'{l:.1f} - {h:.1f} ({j:.1f}) msec'
 
 
-def plot() -> None:
+def _proc_results() -> Dict[str, ColumnDataSource]:
     filename = 'example_results.json'
     with open(filename, 'r') as f:
         results: List[Dict[str, Any]] = json.loads(f.read())
@@ -87,25 +87,31 @@ def plot() -> None:
             _latency_stats(speedtest['upload']['latency'])
         )
 
+    sources: Dict[str, ColumnDataSource] = {}
+    for nickname in speeds.keys():
+        data = {'date': speeds[nickname]['date'],
+                'download_mbps': speeds[nickname]['download_mbps'],
+                'upload_mbps': speeds[nickname]['upload_mbps'],
+                'nickname': speeds[nickname]['nickname'],
+                'url': speeds[nickname]['url'],
+                'idle_latency_stats': speeds[nickname]['idle_latency_stats'],
+                'down_latency_stats': speeds[nickname]['down_latency_stats'],
+                'up_latency_stats': speeds[nickname]['up_latency_stats'],
+                }
+        sources[nickname] = ColumnDataSource(data)
+    return sources
+
+
+def plot() -> None:
+
     fig = figure(height=500, width=900, toolbar_location=None,
                  x_axis_type='datetime', x_axis_location='below')
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
 
     dots: List[Scatter] = []
-
     color = itertools.cycle(palette)
-
-    for nickname in speeds.keys():
-        source = ColumnDataSource(data={'date': speeds[nickname]['date'],
-                                        'download_mbps': speeds[nickname]['download_mbps'],
-                                        'upload_mbps': speeds[nickname]['upload_mbps'],
-                                        'nickname': speeds[nickname]['nickname'],
-                                        'url': speeds[nickname]['url'],
-                                        'idle_latency_stats': speeds[nickname]['idle_latency_stats'],
-                                        'down_latency_stats': speeds[nickname]['down_latency_stats'],
-                                        'up_latency_stats': speeds[nickname]['up_latency_stats'],
-                                        }
-                                  )
+    sources = _proc_results()
+    for nickname, source in sources.items():
         c = next(color)
         dots.extend([
             line_dot(fig, source, y='download_mbps',
