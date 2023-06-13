@@ -7,7 +7,7 @@ from collections import defaultdict
 import itertools
 
 from bokeh.plotting import figure, output_file, save
-from bokeh.models import ColumnDataSource, HoverTool, Scatter
+from bokeh.models import ColumnDataSource, HoverTool, Scatter, OpenURL, TapTool
 from bokeh.palettes import Category10_10 as palette
 import config
 
@@ -48,19 +48,24 @@ def plot() -> None:
     speeds: Dict[str, Dict[str, list]] = {}
     for result in results:
         utc = dateutil.parser.isoparse(result['timestamp'])
-        # success = bool(result['returnCode'] == 0)
+        utc = utc.replace(tzinfo=tz.UTC)
+        local = utc.astimezone(tz.tzlocal())
+        success = bool(result['returnCode'] == 0)
+        if not success:
+            continue
         nickname = result['nickname']
         if nickname not in speeds.keys():
             speeds[nickname] = defaultdict(list)
         speedtest = result['output']
+
         download_mbps = float(speedtest['download']['bandwidth']) * 8 / 1000 / 1000
         upload_mbps = float(speedtest['upload']['bandwidth']) * 8 / 1000 / 1000
-        utc = utc.replace(tzinfo=tz.UTC)
-        local = utc.astimezone(tz.tzlocal())
+        url = speedtest['result']['url']
         speeds[nickname]['date'].append(local)
         speeds[nickname]['download'].append(download_mbps)
         speeds[nickname]['upload'].append(upload_mbps)
         speeds[nickname]['nickname'].append(nickname)
+        speeds[nickname]['url'].append(url)
 
     fig = figure(height=500, width=900, toolbar_location=None,
                  x_axis_type='datetime', x_axis_location='below')
@@ -74,7 +79,9 @@ def plot() -> None:
         source = ColumnDataSource(data={'date': speeds[nickname]['date'],
                                         'download': speeds[nickname]['download'],
                                         'upload': speeds[nickname]['upload'],
-                                        'nickname': speeds[nickname]['nickname']}
+                                        'nickname': speeds[nickname]['nickname'],
+                                        'url': speeds[nickname]['url'],
+                                        }
                                   )
         c = next(color)
         dots.extend([
@@ -84,20 +91,22 @@ def plot() -> None:
                      legend_label=nickname, color=c, dashed=True)
         ])
 
-    fig.add_tools(
-        HoverTool(
-            tooltips=[
-                ('Interface', '@nickname'),
-                ('Date', '@date{%Y-%m-%d %H:%M:%S}'),
-                ('Download rate', '@download{0.0} MBps'),
-                ('Upload rate', '@upload{0.0} MBps'),
-            ],
-            formatters={
-                '@date': 'datetime'
-            },
-            mode='mouse',
-            renderers=dots,
-        ))
+    hover = HoverTool(
+        tooltips=[
+            ('Interface', '@nickname'),
+            ('Date', '@date{%Y-%m-%d %H:%M:%S}'),
+            ('Download rate', '@download{0.0} MBps'),
+            ('Upload rate', '@upload{0.0} MBps'),
+        ],
+        formatters={
+            '@date': 'datetime'
+        },
+        mode='mouse',
+        renderers=dots,
+    )
+    tap = TapTool()
+    tap.callback = OpenURL(url='@url')
+    fig.add_tools(hover, tap)
 
     output_file('plots.html')
     save(fig)
