@@ -2,6 +2,7 @@
 from typing import List, Dict, Any
 import json
 import dateutil.parser
+from dateutil import tz
 from collections import defaultdict
 import itertools
 
@@ -54,7 +55,9 @@ def plot() -> None:
         speedtest = result['output']
         download_mbps = float(speedtest['download']['bandwidth']) * 8 / 1000 / 1000
         upload_mbps = float(speedtest['upload']['bandwidth']) * 8 / 1000 / 1000
-        speeds[nickname]['date'].append(utc.timestamp())
+        utc = utc.replace(tzinfo=tz.UTC)
+        local = utc.astimezone(tz.tzlocal())
+        speeds[nickname]['date'].append(local)
         speeds[nickname]['download'].append(download_mbps)
         speeds[nickname]['upload'].append(upload_mbps)
         speeds[nickname]['nickname'].append(nickname)
@@ -85,7 +88,7 @@ def plot() -> None:
         HoverTool(
             tooltips=[
                 ('Interface', '@nickname'),
-                ('Date', '@date'),
+                ('Date', '@date{%Y-%m-%d %H:%M:%S}'),
                 ('Download rate', '@download{0.0} MBps'),
                 ('Upload rate', '@upload{0.0} MBps'),
             ],
