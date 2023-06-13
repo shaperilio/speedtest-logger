@@ -40,6 +40,13 @@ def line_dot(fig: figure,
     return d
 
 
+def _latency_stats(latency: Dict[str, float]) -> str:
+    l = float(latency['low'])
+    h = float(latency['high'])
+    j = float(latency['jitter'])
+    return f'{l:.1f} - {h:.1f} ({j:.1f}) msec'
+
+
 def plot() -> None:
     filename = 'example_results.json'
     with open(filename, 'r') as f:
@@ -58,14 +65,27 @@ def plot() -> None:
             speeds[nickname] = defaultdict(list)
         speedtest = result['output']
 
-        download_mbps = float(speedtest['download']['bandwidth']) * 8 / 1000 / 1000
-        upload_mbps = float(speedtest['upload']['bandwidth']) * 8 / 1000 / 1000
-        url = speedtest['result']['url']
-        speeds[nickname]['date'].append(local)
-        speeds[nickname]['download'].append(download_mbps)
-        speeds[nickname]['upload'].append(upload_mbps)
         speeds[nickname]['nickname'].append(nickname)
+        speeds[nickname]['date'].append(local)
+
+        download_mbps = float(speedtest['download']['bandwidth']) * 8 / 1000 / 1000
+        speeds[nickname]['download_mbps'].append(download_mbps)
+
+        upload_mbps = float(speedtest['upload']['bandwidth']) * 8 / 1000 / 1000
+        speeds[nickname]['upload_mbps'].append(upload_mbps)
+
+        url = speedtest['result']['url']
         speeds[nickname]['url'].append(url)
+
+        speeds[nickname]['idle_latency_stats'].append(
+            _latency_stats(speedtest['ping'])
+        )
+        speeds[nickname]['down_latency_stats'].append(
+            _latency_stats(speedtest['download']['latency'])
+        )
+        speeds[nickname]['up_latency_stats'].append(
+            _latency_stats(speedtest['upload']['latency'])
+        )
 
     fig = figure(height=500, width=900, toolbar_location=None,
                  x_axis_type='datetime', x_axis_location='below')
@@ -77,17 +97,20 @@ def plot() -> None:
 
     for nickname in speeds.keys():
         source = ColumnDataSource(data={'date': speeds[nickname]['date'],
-                                        'download': speeds[nickname]['download'],
-                                        'upload': speeds[nickname]['upload'],
+                                        'download_mbps': speeds[nickname]['download_mbps'],
+                                        'upload_mbps': speeds[nickname]['upload_mbps'],
                                         'nickname': speeds[nickname]['nickname'],
                                         'url': speeds[nickname]['url'],
+                                        'idle_latency_stats': speeds[nickname]['idle_latency_stats'],
+                                        'down_latency_stats': speeds[nickname]['down_latency_stats'],
+                                        'up_latency_stats': speeds[nickname]['up_latency_stats'],
                                         }
                                   )
         c = next(color)
         dots.extend([
-            line_dot(fig, source, y='download',
+            line_dot(fig, source, y='download_mbps',
                      legend_label=nickname, color=c, dashed=False),
-            line_dot(fig, source, y='upload',
+            line_dot(fig, source, y='upload_mbps',
                      legend_label=nickname, color=c, dashed=True)
         ])
 
@@ -95,8 +118,12 @@ def plot() -> None:
         tooltips=[
             ('Interface', '@nickname'),
             ('Date', '@date{%Y-%m-%d %H:%M:%S}'),
-            ('Download rate', '@download{0.0} MBps'),
-            ('Upload rate', '@upload{0.0} MBps'),
+            ('Ping min - max (jitter)', '@idle_latency_stats'),
+            ('Download rate', '@download_mbps{0.0} MBps'),
+            ('Latency min - max (jitter)', '@down_latency_stats'),
+            ('Upload rate', '@upload_mbps{0.0} MBps'),
+            ('Latency min - max (jitter)', '@up_latency_stats'),
+
         ],
         formatters={
             '@date': 'datetime'
