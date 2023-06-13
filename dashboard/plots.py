@@ -3,11 +3,40 @@ from typing import List, Dict, Any
 import json
 import dateutil.parser
 from collections import defaultdict
+import itertools
 
 from bokeh.plotting import figure, output_file, save
-from bokeh.models import ColumnDataSource, HoverTool
-
+from bokeh.models import ColumnDataSource, HoverTool, Scatter
+from bokeh.palettes import Category10_10 as palette
 import config
+
+
+def line_dot(fig: figure,
+             source: ColumnDataSource,
+             *,
+             y: str,
+             legend_label: str,
+             color: str,
+             dashed: bool,
+             ) -> Scatter:
+    if dashed:
+        line_dash = 'dashed'
+    else:
+        line_dash = 'solid'
+    fig.line(x='date', y=y, source=source,
+             line_width=2,
+             line_color=color,
+             legend_label=legend_label,
+             line_dash=line_dash,
+             )
+    d = fig.circle(x='date', y=y, source=source,
+                   size=6,
+                   fill_color='white',
+                   line_width=2,
+                   line_color=color,
+                   legend_label=legend_label,
+                   )
+    return d
 
 
 def plot() -> None:
@@ -30,31 +59,45 @@ def plot() -> None:
         speeds[nickname]['upload'].append(upload_mbps)
         speeds[nickname]['nickname'].append(nickname)
 
-    p = figure(height=300, width=800, tools='hover', toolbar_location='right',
-               x_axis_type='datetime', x_axis_location='below')
+    fig = figure(height=500, width=900, toolbar_location=None,
+                 x_axis_type='datetime', x_axis_location='below')
+    fig.yaxis.axis_label = 'Transfer rate (Mbps)'
+
+    dots: List[Scatter] = []
+
+    color = itertools.cycle(palette)
 
     for nickname in speeds.keys():
         source = ColumnDataSource(data={'date': speeds[nickname]['date'],
-                                        nickname: speeds[nickname]['download']}
+                                        'download': speeds[nickname]['download'],
+                                        'upload': speeds[nickname]['upload'],
+                                        'nickname': speeds[nickname]['nickname']}
                                   )
-        p.line(x='date', y=nickname, source=source)
-        p.add_tools(
-            HoverTool(
-                tooltips=[
-                    ('Date', '@date'),
-                    ('Download rate', '<div align="left">@nickname{0.0} MBps</div>'),
-                    ('Interface', '<div align="left">@nickname</div>'),
-                ],
-                formatters={
-                    '@date': 'datetime'
-                },
-                mode='vline',
-                # renderers=curves,
-            ))
-    p.yaxis.axis_label = 'Download rate (Mbps)'
+        c = next(color)
+        dots.extend([
+            line_dot(fig, source, y='download',
+                     legend_label=nickname, color=c, dashed=False),
+            line_dot(fig, source, y='upload',
+                     legend_label=nickname, color=c, dashed=True)
+        ])
+
+    fig.add_tools(
+        HoverTool(
+            tooltips=[
+                ('Interface', '@nickname'),
+                ('Date', '@date'),
+                ('Download rate', '@download{0.0} MBps'),
+                ('Upload rate', '@upload{0.0} MBps'),
+            ],
+            formatters={
+                '@date': 'datetime'
+            },
+            mode='mouse',
+            renderers=dots,
+        ))
 
     output_file('plots.html')
-    save(p)
+    save(fig)
 
 
 plot()
