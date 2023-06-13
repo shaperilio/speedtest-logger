@@ -56,6 +56,8 @@ def _run(interface: Optional[str], nickname: Optional[str]) -> Dict[str, Any]:
         return result
 
 
+_l.debug(f'Starting execution at {_isotime()}.')
+
 while True:
     results_path = os.path.abspath(config.results_db)
     results: List[dict] = []
