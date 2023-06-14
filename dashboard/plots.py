@@ -49,14 +49,14 @@ def _latency_stats(latency: Dict[str, float]) -> str:
     return f'{l:.1f} - {h:.1f} ({j:.1f}) msec'
 
 
-def _proc_results() -> Dict[str, ColumnDataSource]:
+def _proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
     filename = config.results_db
     # filename = 'example_results.json'
     with open(filename, 'r') as f:
         results: List[Dict[str, Any]] = json.loads(f.read())
 
     speeds: Dict[str, Dict[str, list]] = {}
-    for result in results:
+    for result in reversed(results):
         utc = dateutil.parser.isoparse(result['timestamp'])
         utc = utc.replace(tzinfo=tz.UTC)
         local = utc.astimezone(tz.tzlocal())
@@ -89,6 +89,8 @@ def _proc_results() -> Dict[str, ColumnDataSource]:
         speeds[nickname]['up_latency_stats'].append(
             _latency_stats(speedtest['upload']['latency'])
         )
+        if len(speeds) < n_records:
+            break
 
     sources: Dict[str, ColumnDataSource] = {}
     for nickname in speeds.keys():
@@ -112,7 +114,7 @@ def down_up() -> str:
 
     dots: List[Scatter] = []
     color = itertools.cycle(palette)
-    sources = _proc_results()
+    sources = _proc_results(config.n_records)
     for nickname, source in sources.items():
         c = next(color)
         dots.extend([

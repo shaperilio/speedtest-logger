@@ -27,3 +27,6 @@ displaying results.
 
 n_attempts: int = 5
 """Number of times to execute `speedtest` while the return code is not 0. Must be at least 1."""
+
+n_records = 500
+"""Maximum number of records to show on the plot."""
