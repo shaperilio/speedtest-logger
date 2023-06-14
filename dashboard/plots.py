@@ -6,9 +6,11 @@ from dateutil import tz
 from collections import defaultdict
 import itertools
 
-from bokeh.plotting import figure, output_file, save
+from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool, Scatter, OpenURL, TapTool
 from bokeh.palettes import Category10_10 as palette
+from bokeh.resources import CDN
+from bokeh.embed import file_html
 import config
 
 
@@ -48,6 +50,7 @@ def _latency_stats(latency: Dict[str, float]) -> str:
 
 
 def _proc_results() -> Dict[str, ColumnDataSource]:
+    filename = config.results_db
     filename = 'example_results.json'
     with open(filename, 'r') as f:
         results: List[Dict[str, Any]] = json.loads(f.read())
@@ -102,8 +105,7 @@ def _proc_results() -> Dict[str, ColumnDataSource]:
     return sources
 
 
-def plot() -> None:
-
+def down_up() -> str:
     fig = figure(height=500, width=900, toolbar_location=None,
                  x_axis_type='datetime', x_axis_location='below')
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
@@ -141,8 +143,4 @@ def plot() -> None:
     tap.callback = OpenURL(url='@url')
     fig.add_tools(hover, tap)
 
-    output_file('plots.html')
-    save(fig)
-
-
-plot()
+    return file_html(fig, CDN, 'Speedtest log')
