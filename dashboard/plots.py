@@ -110,7 +110,7 @@ def _proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
 
 
 def down_up() -> str:
-    fig = figure(height=500, width=900, toolbar_location=None,
+    fig = figure(height=500, width=1200, toolbar_location=None,
                  x_axis_type='datetime', x_axis_location='below')
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
 
