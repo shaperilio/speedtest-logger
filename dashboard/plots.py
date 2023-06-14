@@ -51,7 +51,7 @@ def _latency_stats(latency: Dict[str, float]) -> str:
 
 def _proc_results() -> Dict[str, ColumnDataSource]:
     filename = config.results_db
-    filename = 'example_results.json'
+    # filename = 'example_results.json'
     with open(filename, 'r') as f:
         results: List[Dict[str, Any]] = json.loads(f.read())
 
