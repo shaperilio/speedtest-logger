@@ -56,6 +56,7 @@ def _proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
         results: List[Dict[str, Any]] = json.loads(f.read())
 
     speeds: Dict[str, Dict[str, list]] = {}
+    n = 0
     for result in reversed(results):
         utc = dateutil.parser.isoparse(result['timestamp'])
         utc = utc.replace(tzinfo=tz.UTC)
@@ -89,7 +90,8 @@ def _proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
         speeds[nickname]['up_latency_stats'].append(
             _latency_stats(speedtest['upload']['latency'])
         )
-        if len(speeds) < n_records:
+        n += 1
+        if n > n_records:
             break
 
     sources: Dict[str, ColumnDataSource] = {}
