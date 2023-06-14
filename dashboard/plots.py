@@ -91,7 +91,7 @@ def _proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
             _latency_stats(speedtest['upload']['latency'])
         )
         n += 1
-        if n > n_records:
+        if n == n_records:
             break
 
     sources: Dict[str, ColumnDataSource] = {}
