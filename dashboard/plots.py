@@ -5,6 +5,7 @@ import dateutil.parser
 from dateutil import tz
 from collections import defaultdict
 import itertools
+import logging
 
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool, Scatter, OpenURL, TapTool
@@ -12,6 +13,8 @@ from bokeh.palettes import Category10_10 as palette
 from bokeh.resources import CDN
 from bokeh.embed import file_html
 import config
+
+_l = logging.getLogger(__name__)
 
 
 def line_dot(fig: figure,
@@ -57,39 +60,52 @@ def _proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
 
     speeds: Dict[str, Dict[str, list]] = {}
     n = 0
-    for result in reversed(results):
+    for idx, result in enumerate(reversed(results)):
         utc = dateutil.parser.isoparse(result['timestamp'])
         utc = utc.replace(tzinfo=tz.UTC)
         local = utc.astimezone(tz.tzlocal())
         success = bool(result['returnCode'] == 0)
-        if not success:
-            continue
         nickname = result['nickname']
         if nickname not in speeds.keys():
             speeds[nickname] = defaultdict(list)
-        speedtest = result['output']
-
         speeds[nickname]['nickname'].append(nickname)
         speeds[nickname]['date'].append(local)
 
-        download_mbps = float(speedtest['download']['bandwidth']) * 8 / 1000 / 1000
-        speeds[nickname]['download_mbps'].append(download_mbps)
+        if success:
+            try:
+                speedtest = result['output']
+                download_mbps = float(speedtest['download']['bandwidth']) * 8 / 1000 / 1000
+                upload_mbps = float(speedtest['upload']['bandwidth']) * 8 / 1000 / 1000
+                url = speedtest['result']['url']
 
-        upload_mbps = float(speedtest['upload']['bandwidth']) * 8 / 1000 / 1000
-        speeds[nickname]['upload_mbps'].append(upload_mbps)
+                speeds[nickname]['download_mbps'].append(download_mbps)
+                speeds[nickname]['upload_mbps'].append(upload_mbps)
+                speeds[nickname]['url'].append(url)
 
-        url = speedtest['result']['url']
-        speeds[nickname]['url'].append(url)
+                lat = _latency_stats(speedtest['ping'])
+                speeds[nickname]['idle_latency_stats'].append(lat)
+                # It appears sometimes latency results are not in the record...
+                if 'latency' in speedtest['download'].keys():
+                    lat = _latency_stats(speedtest['download']['latency'])
+                    speeds[nickname]['down_latency_stats'].append(lat)
+                else:
+                    speeds[nickname]['down_latency_stats'].append('NT')
 
-        speeds[nickname]['idle_latency_stats'].append(
-            _latency_stats(speedtest['ping'])
-        )
-        speeds[nickname]['down_latency_stats'].append(
-            _latency_stats(speedtest['download']['latency'])
-        )
-        speeds[nickname]['up_latency_stats'].append(
-            _latency_stats(speedtest['upload']['latency'])
-        )
+                if 'latency' in speedtest['upload'].keys():
+                    lat = _latency_stats(speedtest['upload']['latency'])
+                    speeds[nickname]['up_latency_stats'].append(lat)
+                else:
+                    speeds[nickname]['up_latency_stats'].append('NT')
+            except KeyError as ke:
+                _l.error(f'`KeyError` while processing record {idx} from the bottom.')
+                _l.exception(ke)
+        else:
+            speeds[nickname]['download_mbps'].append(0)
+            speeds[nickname]['upload_mbps'].append(0)
+            speeds[nickname]['url'].append('')
+            speeds[nickname]['idle_latency_stats'].append('NT')
+            speeds[nickname]['down_latency_stats'].append('NT')
+            speeds[nickname]['up_latency_stats'].append('NT')
         n += 1
         if n == n_records:
             break
