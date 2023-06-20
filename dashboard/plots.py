@@ -56,12 +56,10 @@ def _latency_stats(latency: Dict[str, float]) -> str:
 
 def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
     filename = config.results_db
-    # filename = 'example_results.json'
     with open(filename, 'r') as f:
         results: List[Dict[str, Any]] = json.loads(f.read())
 
     speeds: Dict[str, Dict[str, list]] = {}
-    n = 0
     for idx, result in enumerate(reversed(results)):
         utc = dateutil.parser.isoparse(result['timestamp'])
         utc = utc.replace(tzinfo=tz.UTC)
@@ -108,8 +106,7 @@ def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
             speeds[nickname]['idle_latency_stats'].append('NT')
             speeds[nickname]['down_latency_stats'].append('NT')
             speeds[nickname]['up_latency_stats'].append('NT')
-        n += 1
-        if n == n_records:
+        if idx+1 == n_records:
             break
 
     sources: Dict[str, ColumnDataSource] = {}
