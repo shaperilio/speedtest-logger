@@ -12,3 +12,8 @@ def main(n_records: str):
     sources = proc_results(int(n_records))
     smoothed = smooth(sources)
     return down_up(smoothed)
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return ''
