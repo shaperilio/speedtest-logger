@@ -11,3 +11,6 @@ venv/
 
 # default results location
 results/
+
+# scratch file for testing
+scratch.py
