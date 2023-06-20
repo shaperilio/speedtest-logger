@@ -30,6 +30,7 @@ def run_speedtest(interface: Optional[str]) -> Tuple[int, Dict[str, Any]]:
         result_json = json.loads(subprocess.check_output(args, stderr=subprocess.STDOUT))
         returncode = 0
     except subprocess.CalledProcessError as e:
+        result_json = {}
         returncode = e.returncode
 
     return returncode, result_json
