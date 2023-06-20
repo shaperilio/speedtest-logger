@@ -1,8 +1,14 @@
 from flask import Flask
-from .plots import down_up
+
+import config
+
+from .plots import proc_results, smooth, down_up
+
 app = Flask(__name__)
 
 
 @app.route('/')
 def main():
-    return down_up()
+    sources = proc_results(config.n_records)
+    smoothed = smooth(sources)
+    return down_up(smoothed)

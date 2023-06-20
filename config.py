@@ -30,3 +30,6 @@ n_attempts: int = 5
 
 n_records = 300
 """Maximum number of records to show on the plot."""
+
+n_time_avg = 5
+"""Number of points to use for time average smoothing of the plot. Must be at least 1."""

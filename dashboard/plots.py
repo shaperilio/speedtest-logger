@@ -7,6 +7,8 @@ from collections import defaultdict
 import itertools
 import logging
 
+import numpy
+
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool, Scatter, OpenURL, TapTool
 from bokeh.palettes import Category10_10 as palette
@@ -52,7 +54,7 @@ def _latency_stats(latency: Dict[str, float]) -> str:
     return f'{l:.1f} - {h:.1f} ({j:.1f}) msec'
 
 
-def _proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
+def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
     filename = config.results_db
     # filename = 'example_results.json'
     with open(filename, 'r') as f:
@@ -125,14 +127,46 @@ def _proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
     return sources
 
 
-def down_up() -> str:
+def _time_average(vals: List[float], *, n_avg: int, keep_zero: bool) -> List[float]:
+    window = [vals[0]] * n_avg
+    averaged: List[float] = []
+    for i in range(len(vals)):
+        val = vals[i]
+        window.append(val)
+        window.pop(0)
+        if keep_zero and val == 0:
+            averaged.append(val)
+        else:
+            averaged.append(numpy.mean(window))
+    return averaged
+
+
+def smooth(sources: Dict[str, ColumnDataSource]) -> Dict[str, ColumnDataSource]:
+    n_avg = config.n_time_avg
+    if n_avg < 1:
+        raise ValueError(f'`n_time_avg` must be at least 1, got {config.n_time_avg}.')
+    if n_avg == 1:
+        return sources
+
+    smoothed: Dict[str, ColumnDataSource] = {}
+    for source, cds in sources.items():
+        data: Dict[str, list] = {}
+        for key in cds.data.keys():
+            if key in ['download_mbps', 'upload_mbps']:
+                data[key] = _time_average(cds.data[key], n_avg=n_avg, keep_zero=True)
+            else:
+                data[key] = cds.data[key]
+        smoothed[source] = ColumnDataSource(data=data)
+    return smoothed
+
+
+def down_up(sources: Dict[str, ColumnDataSource]) -> str:
     fig = figure(height=500, width=1500, toolbar_location=None,
                  x_axis_type='datetime', x_axis_location='below')
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
 
     dots: List[Scatter] = []
     color = itertools.cycle(palette)
-    sources = _proc_results(config.n_records)
     for nickname, source in sources.items():
         c = next(color)
         dots.extend([
