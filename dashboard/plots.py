@@ -146,11 +146,10 @@ def down_up() -> str:
         tooltips=[
             ('Interface', '@nickname'),
             ('Date', '@date{%Y-%m-%d %H:%M:%S}'),
+            ('Down / up rate', '@download_mbps{0.0} / @upload_mbps{0.0} MBps'),
             ('Ping min - max (jitter)', '@idle_latency_stats'),
-            ('Download rate', '@download_mbps{0.0} MBps'),
-            ('Latency min - max (jitter)', '@down_latency_stats'),
-            ('Upload rate', '@upload_mbps{0.0} MBps'),
-            ('Latency min - max (jitter)', '@up_latency_stats'),
+            ('Down latency min - max (jitter)', '@down_latency_stats'),
+            ('Up latency min - max (jitter)', '@up_latency_stats'),
 
         ],
         formatters={
