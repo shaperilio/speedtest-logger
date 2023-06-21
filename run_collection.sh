@@ -10,6 +10,11 @@ if ! command -v screen >/dev/null 2>&1; then
     exit 2
 fi
 
+if [ ! -f speedtest-logger-marker ]; then
+    echo "Change to repo root directory; current directory is $pwd."
+    exit 3
+fi
+
 # Requires Python 3.8+, `pip`, and `virtualenv`
 if [ -d venv ]; then
     echo "Virtual environment exists."
