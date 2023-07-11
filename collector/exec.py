@@ -69,7 +69,7 @@ write_results: bool = False
 def is_time_to_test(interface: str) -> bool:
     # Note default values guarantee a return value of True
     delta_sec = time.time() - last_test.get(interface, 0)
-    if delta_sec >= waits_min.get(interface, 0):
+    if delta_sec >= waits_min.get(interface, 0) * 60:
         return True
     else:
         return False
