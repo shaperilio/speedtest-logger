@@ -58,6 +58,31 @@ def _run(interface: Optional[str], nickname: Optional[str]) -> Dict[str, Any]:
 
 _l.debug(f'Starting execution at {_isotime()}.')
 
+waits_min: Dict[str, float] = {}
+"""How long to wait to retest each interface."""
+last_test: Dict[str, float] = {}
+"""Last time each interface was tested."""
+write_results: bool = False
+"""Whether or not results need to be written to disk."""
+
+
+def is_time_to_test(interface: str) -> bool:
+    # Note default values guarantee a return value of True
+    delta_sec = time.time() - last_test.get(interface, 0)
+    if delta_sec >= waits_min.get(interface, 0):
+        return True
+    else:
+        return False
+
+
+def set_wait_time(interface: str, result: dict) -> float:
+    if result['returnCode'] == 0:
+        waits_min[interface] = config.test_interval_min
+    else:
+        waits_min[interface] = config.retry_interval_min
+    return waits_min[interface]
+
+
 while True:
     results_path = os.path.abspath(config.results_db)
     results: List[dict] = []
@@ -71,14 +96,30 @@ while True:
 
     if hasattr(config, 'interfaces'):
         for name, nickname in config.interfaces:
+            if not is_time_to_test(name):
+                continue
             _l.info(f'Running test on interface "{name}", a.k.a. "{nickname}"...')
-            results.append(_run(name, nickname))
+            result = _run(name, nickname)
+            results.append(result)
+            write_results = True
+            interval_min = set_wait_time(name, result)
+            _l.info(f'Will test again on interface "{name}", a.k.a. "{nickname}" '
+                    f'in {interval_min} minutes...')
+            last_test[name] = time.time()
     else:
-        _l.info('Running test without specifying interface...')
-        results.append(_run(interface=None, nickname=None))
-    _l.debug(f'Saving results to "{results_path}".')
-    with open(results_path, 'w') as f:
-        f.write(json.dumps(results, sort_keys=True, indent=4))
+        if is_time_to_test('all'):
+            _l.info('Running test without specifying interface...')
+            result = _run(interface=None, nickname=None)
+            results.append(result)
+            write_results = True
+            interval_min = set_wait_time('all', result)
+            _l.info(f'Will test again in {interval_min} minutes...')
+            last_test['all'] = time.time()
 
-    _l.info(f'Waiting {config.test_interval_min} minutes to test again...')
-    time.sleep(config.test_interval_min*60)
+    if write_results:
+        _l.debug(f'Saving results to "{results_path}".')
+        with open(results_path, 'w') as f:
+            f.write(json.dumps(results, sort_keys=True, indent=4))
+        write_results = False
+
+    time.sleep(10)

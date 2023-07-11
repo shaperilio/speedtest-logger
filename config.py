@@ -1,7 +1,10 @@
 from typing import Tuple, Union
 
 test_interval_min: float = 20
-"""How often to run the speed test."""
+"""How often to run the speed test. Note there's a 10 second resolution."""
+
+retry_interval_min: float = 1
+"""How soon to re-run the speed test if there's an error. Note there's a 10 second resolution."""
 
 speedtest_path: str = '/usr/bin/speedtest'
 """Path to Ooklah speedtest CLI executable."""
