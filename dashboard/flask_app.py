@@ -6,6 +6,7 @@ from .plots import proc_results, smooth, down_up
 
 app = Flask(__name__)
 
+
 @app.route('/', defaults={'n_records': config.n_records})
 @app.route('/<n_records>')
 def main(n_records: str):
