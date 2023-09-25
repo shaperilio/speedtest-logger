@@ -110,7 +110,7 @@ def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
             break
 
     sources: Dict[str, ColumnDataSource] = {}
-    for nickname in speeds.keys():
+    for nickname in sorted(speeds.keys()):
         data = {'date': speeds[nickname]['date'],
                 'download_mbps': speeds[nickname]['download_mbps'],
                 'upload_mbps': speeds[nickname]['upload_mbps'],
