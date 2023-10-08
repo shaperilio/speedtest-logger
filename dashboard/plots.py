@@ -203,7 +203,8 @@ def down_up(sources: Dict[str, ColumnDataSource]) -> str:
     return file_html(fig, CDN, 'Speedtest log')
 
 
-def stats_by_val(by_val: Dict[str, ColumnDataSource], val_name: str) -> Dict[str, ColumnDataSource]:
+def down_up_by_val(by_val: Dict[str, ColumnDataSource],
+                   val_name: str) -> Dict[str, ColumnDataSource]:
     by_val_speeds: Dict[str, Dict[str, list]] = {}
     for nickname, source in by_val.items():
         hours = source.data[val_name]
@@ -252,7 +253,7 @@ def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
     fig.xaxis.axis_label = 'Hour of day'
     fig.xaxis.ticker = list(range(24))
 
-    sources = stats_by_val(sources, 'hour')
+    sources = down_up_by_val(sources, 'hour')
 
     dots: List[Scatter] = []
     color = itertools.cycle(palette)
@@ -294,7 +295,7 @@ def down_up_by_weekday(sources: Dict[str, ColumnDataSource]) -> str:
              6: 'Sun'}
     fig.xaxis.ticker = list(ticks.keys())
     fig.xaxis.major_label_overrides = ticks
-    sources = stats_by_val(sources, 'weekday')
+    sources = down_up_by_val(sources, 'weekday')
 
     dots: List[Scatter] = []
     color = itertools.cycle(palette)
