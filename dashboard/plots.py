@@ -159,7 +159,8 @@ def smooth(sources: Dict[str, ColumnDataSource]) -> Dict[str, ColumnDataSource]:
 
 def down_up(sources: Dict[str, ColumnDataSource]) -> str:
     fig = figure(height=500, width=1500, toolbar_location=None,
-                 x_axis_type='datetime', x_axis_location='below')
+                 x_axis_type='datetime', x_axis_location='below',
+                 sizing_mode='stretch_width')
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
 
     dots: List[Scatter] = []
