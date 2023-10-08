@@ -76,7 +76,10 @@ def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
                 speedtest = result['output']
                 download_mbps = float(speedtest['download']['bandwidth']) * 8 / 1000 / 1000
                 upload_mbps = float(speedtest['upload']['bandwidth']) * 8 / 1000 / 1000
-                url = speedtest['result']['url']
+                if 'url' not in speedtest['result'].keys():
+                    url = ''
+                else:
+                    url = speedtest['result']['url']
 
                 speeds[nickname]['download_mbps'].append(download_mbps)
                 speeds[nickname]['upload_mbps'].append(upload_mbps)
