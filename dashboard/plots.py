@@ -220,6 +220,9 @@ def down_up_by_val(source: Dict[str, ColumnDataSource],
             by_val_dn_up[val].append((dn, up))
             if not suc:
                 fails[val] += 1
+        for k in by_val_dn_up.keys():
+            if k not in fails.keys():
+                fails[k] = 0
         by_val_dn_up = dict(sorted(by_val_dn_up.items(), key=lambda i: i[0]))
 
         dn_by_val = [[i[0] for i in by_val_dn_up[k]] for k in by_val_dn_up.keys()]
