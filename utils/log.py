@@ -191,7 +191,7 @@ def configure_logging(log_to_file: Union[bool, str] = False,
                     break
         else:
             # This is a unique filename. Add the handler.
-            filehandler = RotatingFileHandler(log_file, maxBytes=1024 * 1024 * 100, backupCount=5)
+            filehandler = RotatingFileHandler(log_file, maxBytes=1024 * 1024 * 10, backupCount=5)
             filehandler.setLevel(logging.DEBUG)
             # configure file handler (no colored messages here)
             fmt = "[%(levelname)+8s|%(asctime)s|%(name)20s] %(message)s"
