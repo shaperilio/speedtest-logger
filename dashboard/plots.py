@@ -82,6 +82,7 @@ def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
                 else:
                     url = speedtest['result']['url']
 
+                speeds[nickname]['success'].append(True)
                 speeds[nickname]['download_mbps'].append(download_mbps)
                 speeds[nickname]['upload_mbps'].append(upload_mbps)
                 speeds[nickname]['url'].append(url)
@@ -104,6 +105,7 @@ def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
                 _l.error(f'`KeyError` while processing record {idx} from the bottom.')
                 _l.exception(ke)
         else:
+            speeds[nickname]['success'].append(False)
             speeds[nickname]['download_mbps'].append(0)
             speeds[nickname]['upload_mbps'].append(0)
             speeds[nickname]['url'].append('')
@@ -118,6 +120,7 @@ def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
         data = {'date': speeds[nickname]['date'],
                 'weekday': [d.weekday() for d in speeds[nickname]['date']],
                 'hour': [d.hour for d in speeds[nickname]['date']],
+                'success': speeds[nickname]['success'],
                 'download_mbps': speeds[nickname]['download_mbps'],
                 'upload_mbps': speeds[nickname]['upload_mbps'],
                 'nickname': speeds[nickname]['nickname'],
@@ -210,9 +213,13 @@ def down_up_by_val(by_val: Dict[str, ColumnDataSource],
         vals = source.data[val_name]
         dns = source.data['download_mbps']
         ups = source.data['upload_mbps']
+        successes = source.data['success']
         by_val: Dict[int, List[Tuple[float, float]]] = defaultdict(list)
-        for val, dn, up in zip(vals, dns, ups):
+        fails: Dict[int, int] = defaultdict(lambda: 0)
+        for val, dn, up, suc in zip(vals, dns, ups, successes):
             by_val[val].append((dn, up))
+            if not suc:
+                fails[val] += 1
         by_val = dict(sorted(by_val.items(), key=lambda i: i[0]))
 
         dn_by_val = [[i[0] for i in by_val[k]] for k in by_val.keys()]
@@ -222,6 +229,7 @@ def down_up_by_val(by_val: Dict[str, ColumnDataSource],
         std_dn_by_val = [numpy.std(d) for d in dn_by_val]
         std_up_by_val = [numpy.std(u) for u in up_by_val]
         n_by_val = [len(d) for d in dn_by_val]
+        fails_by_val = [f for f in fails.values()]
 
         by_val_speeds[nickname] = {}
         by_val_speeds[nickname][val_name] = list(by_val.keys())
@@ -230,6 +238,7 @@ def down_up_by_val(by_val: Dict[str, ColumnDataSource],
         by_val_speeds[nickname]['download_mbps_std'] = std_dn_by_val
         by_val_speeds[nickname]['upload_mbps_std'] = std_up_by_val
         by_val_speeds[nickname]['num_tests'] = n_by_val
+        by_val_speeds[nickname]['num_tests_failed'] = fails_by_val
 
     by_val: Dict[str, ColumnDataSource] = {}
     for nickname in sorted(by_val_speeds.keys()):
@@ -241,6 +250,7 @@ def down_up_by_val(by_val: Dict[str, ColumnDataSource],
                 'download_mbps_std': by_val_speeds[nickname]['download_mbps_std'],
                 'upload_mbps_std': by_val_speeds[nickname]['upload_mbps_std'],
                 'num_tests': by_val_speeds[nickname]['num_tests'],
+                'num_tests_failed': by_val_speeds[nickname]['num_tests_failed'],
                 }
         by_val[nickname] = ColumnDataSource(data)
 
@@ -272,7 +282,7 @@ def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
             ('Interface', '@nickname'),
             ('Avg down', '@download_mbps_mean{0.0} +/- @download_mbps_std{0.0} Mbps'),
             ('Avg up rate', ' @upload_mbps_mean{0.0} +/- @upload_mbps_std{0.0} Mbps'),
-            ('Num tests', ' @num_tests{,}')
+            ('Num tests (total / failed)', ' @num_tests{,} / @num_tests_failed{,}')
         ],
         mode='mouse',
         renderers=dots,
@@ -314,7 +324,7 @@ def down_up_by_weekday(sources: Dict[str, ColumnDataSource]) -> str:
             ('Interface', '@nickname'),
             ('Avg down', '@download_mbps_mean{0.0} +/- @download_mbps_std{0.0} Mbps'),
             ('Avg up rate', ' @upload_mbps_mean{0.0} +/- @upload_mbps_std{0.0} Mbps'),
-            ('Num tests', ' @num_tests{,}')
+            ('Num tests (total / failed)', ' @num_tests{,} / @num_tests_failed{,}')
         ],
         mode='mouse',
         renderers=dots,
