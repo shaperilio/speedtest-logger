@@ -249,6 +249,8 @@ def stats_by_val(by_val: Dict[str, ColumnDataSource], val_name: str) -> Dict[str
 def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
     fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below')
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
+    fig.xaxis.axis_label = 'Hour of day'
+    fig.xaxis.ticker = list(range(24))
 
     sources = stats_by_val(sources, 'hour')
 
