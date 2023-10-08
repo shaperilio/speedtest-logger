@@ -206,24 +206,24 @@ def down_up(sources: Dict[str, ColumnDataSource]) -> str:
     return file_html(fig, CDN, 'Speedtest log')
 
 
-def down_up_by_val(by_val: Dict[str, ColumnDataSource],
+def down_up_by_val(source: Dict[str, ColumnDataSource],
                    val_name: str) -> Dict[str, ColumnDataSource]:
     by_val_speeds: Dict[str, Dict[str, list]] = {}
-    for nickname, source in by_val.items():
+    for nickname, source in source.items():
         vals = source.data[val_name]
         dns = source.data['download_mbps']
         ups = source.data['upload_mbps']
         successes = source.data['success']
-        by_val: Dict[int, List[Tuple[float, float]]] = defaultdict(list)
+        by_val_dn_up: Dict[int, List[Tuple[float, float]]] = defaultdict(list)
         fails: Dict[int, int] = defaultdict(lambda: 0)
         for val, dn, up, suc in zip(vals, dns, ups, successes):
-            by_val[val].append((dn, up))
+            by_val_dn_up[val].append((dn, up))
             if not suc:
                 fails[val] += 1
-        by_val = dict(sorted(by_val.items(), key=lambda i: i[0]))
+        by_val_dn_up = dict(sorted(by_val_dn_up.items(), key=lambda i: i[0]))
 
-        dn_by_val = [[i[0] for i in by_val[k]] for k in by_val.keys()]
-        up_by_val = [[i[1] for i in by_val[k]] for k in by_val.keys()]
+        dn_by_val = [[i[0] for i in by_val_dn_up[k]] for k in by_val_dn_up.keys()]
+        up_by_val = [[i[1] for i in by_val_dn_up[k]] for k in by_val_dn_up.keys()]
         mean_dn_by_val = [numpy.mean(d) for d in dn_by_val]
         mean_up_by_val = [numpy.mean(u) for u in up_by_val]
         std_dn_by_val = [numpy.std(d) for d in dn_by_val]
@@ -232,7 +232,7 @@ def down_up_by_val(by_val: Dict[str, ColumnDataSource],
         fails_by_val = [f for f in fails.values()]
 
         by_val_speeds[nickname] = {}
-        by_val_speeds[nickname][val_name] = list(by_val.keys())
+        by_val_speeds[nickname][val_name] = list(by_val_dn_up.keys())
         by_val_speeds[nickname]['download_mbps_mean'] = mean_dn_by_val
         by_val_speeds[nickname]['upload_mbps_mean'] = mean_up_by_val
         by_val_speeds[nickname]['download_mbps_std'] = std_dn_by_val
