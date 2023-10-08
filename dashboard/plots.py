@@ -22,6 +22,7 @@ _l = logging.getLogger(__name__)
 def line_dot(fig: figure,
              source: ColumnDataSource,
              *,
+             x: str,
              y: str,
              legend_label: str,
              color: str,
@@ -31,13 +32,13 @@ def line_dot(fig: figure,
         line_dash = 'dashed'
     else:
         line_dash = 'solid'
-    fig.line(x='date', y=y, source=source,
+    fig.line(x=x, y=y, source=source,
              line_width=2,
              line_color=color,
              legend_label=legend_label,
              line_dash=line_dash,
              )
-    d = fig.circle(x='date', y=y, source=source,
+    d = fig.circle(x=x, y=y, source=source,
                    size=6,
                    fill_color='white',
                    line_width=2,
@@ -171,9 +172,9 @@ def down_up(sources: Dict[str, ColumnDataSource]) -> str:
     for nickname, source in sources.items():
         c = next(color)
         dots.extend([
-            line_dot(fig, source, y='download_mbps',
+            line_dot(fig, source, x='date', y='download_mbps',
                      legend_label=nickname, color=c, dashed=False),
-            line_dot(fig, source, y='upload_mbps',
+            line_dot(fig, source, x='date', y='upload_mbps',
                      legend_label=nickname, color=c, dashed=True)
         ])
 
