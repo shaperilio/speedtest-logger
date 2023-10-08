@@ -15,18 +15,22 @@ def main(n_records: str):
     return down_up(smoothed)
 
 
-@app.route('/hourly/', defaults={'n_records': config.n_records*10})
+@app.route('/hourly/', defaults={'n_records': None})
 @app.route('/hourly/<n_records>')
 def hourly(n_records: str):
-    sources = proc_results(int(n_records))
+    if n_records is not None:
+        n_records = int(n_records)
+    sources = proc_results(n_records)
     smoothed = smooth(sources)
     return down_up_by_hour(smoothed)
 
 
-@app.route('/daily/', defaults={'n_records': config.n_records*10})
+@app.route('/daily/', defaults={'n_records': None})
 @app.route('/daily/<n_records>')
 def daily(n_records: str):
-    sources = proc_results(int(n_records))
+    if n_records is not None:
+        n_records = int(n_records)
+    sources = proc_results(n_records)
     smoothed = smooth(sources)
     return down_up_by_weekday(smoothed)
 

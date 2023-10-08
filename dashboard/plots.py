@@ -1,5 +1,5 @@
 
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Tuple, Any, Optional
 import json
 import dateutil.parser
 from dateutil import tz
@@ -55,7 +55,7 @@ def _latency_stats(latency: Dict[str, float]) -> str:
     return f'{l:.1f} - {h:.1f} ({j:.1f}) msec'
 
 
-def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
+def proc_results(n_records: Optional[int]) -> Dict[str, ColumnDataSource]:
     filename = config.results_db
     with open(filename, 'r') as f:
         results: List[Dict[str, Any]] = json.loads(f.read())
@@ -112,7 +112,7 @@ def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
             speeds[nickname]['idle_latency_stats'].append('NT')
             speeds[nickname]['down_latency_stats'].append('NT')
             speeds[nickname]['up_latency_stats'].append('NT')
-        if idx+1 == n_records:
+        if n_records is not None and idx+1 == n_records:
             break
 
     sources: Dict[str, ColumnDataSource] = {}
