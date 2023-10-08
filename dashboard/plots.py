@@ -207,34 +207,34 @@ def down_up_by_val(by_val: Dict[str, ColumnDataSource],
                    val_name: str) -> Dict[str, ColumnDataSource]:
     by_val_speeds: Dict[str, Dict[str, list]] = {}
     for nickname, source in by_val.items():
-        hours = source.data[val_name]
+        vals = source.data[val_name]
         dns = source.data['download_mbps']
         ups = source.data['upload_mbps']
-        by_hr: Dict[int, List[Tuple[float, float]]] = defaultdict(list)
-        for hour, dn, up in zip(hours, dns, ups):
-            by_hr[hour].append((dn, up))
-        by_hr = dict(sorted(by_hr.items(), key=lambda i: i[0]))
+        by_val: Dict[int, List[Tuple[float, float]]] = defaultdict(list)
+        for val, dn, up in zip(vals, dns, ups):
+            by_val[val].append((dn, up))
+        by_val = dict(sorted(by_val.items(), key=lambda i: i[0]))
 
-        dn_by_hr = [[i[0] for i in by_hr[k]] for k in by_hr.keys()]
-        up_by_hr = [[i[1] for i in by_hr[k]] for k in by_hr.keys()]
-        mean_dn_by_hr = [numpy.mean(d) for d in dn_by_hr]
-        mean_up_by_hr = [numpy.mean(u) for u in up_by_hr]
-        std_dn_by_hr = [numpy.std(d) for d in dn_by_hr]
-        std_up_by_hr = [numpy.std(u) for u in up_by_hr]
-        n_by_hr = [len(d) for d in dn_by_hr]
+        dn_by_val = [[i[0] for i in by_val[k]] for k in by_val.keys()]
+        up_by_val = [[i[1] for i in by_val[k]] for k in by_val.keys()]
+        mean_dn_by_val = [numpy.mean(d) for d in dn_by_val]
+        mean_up_by_val = [numpy.mean(u) for u in up_by_val]
+        std_dn_by_val = [numpy.std(d) for d in dn_by_val]
+        std_up_by_val = [numpy.std(u) for u in up_by_val]
+        n_by_val = [len(d) for d in dn_by_val]
 
         by_val_speeds[nickname] = {}
-        by_val_speeds[nickname][val_name] = list(by_hr.keys())
-        by_val_speeds[nickname]['download_mbps_mean'] = mean_dn_by_hr
-        by_val_speeds[nickname]['upload_mbps_mean'] = mean_up_by_hr
-        by_val_speeds[nickname]['download_mbps_std'] = std_dn_by_hr
-        by_val_speeds[nickname]['upload_mbps_std'] = std_up_by_hr
-        by_val_speeds[nickname]['num_tests'] = n_by_hr
+        by_val_speeds[nickname][val_name] = list(by_val.keys())
+        by_val_speeds[nickname]['download_mbps_mean'] = mean_dn_by_val
+        by_val_speeds[nickname]['upload_mbps_mean'] = mean_up_by_val
+        by_val_speeds[nickname]['download_mbps_std'] = std_dn_by_val
+        by_val_speeds[nickname]['upload_mbps_std'] = std_up_by_val
+        by_val_speeds[nickname]['num_tests'] = n_by_val
 
     by_val: Dict[str, ColumnDataSource] = {}
     for nickname in sorted(by_val_speeds.keys()):
-        n_hours = len(by_val_speeds[nickname][val_name])
-        data = {'nickname': [nickname] * n_hours,
+        n_points = len(by_val_speeds[nickname][val_name])
+        data = {'nickname': [nickname] * n_points,
                 val_name: by_val_speeds[nickname][val_name],
                 'download_mbps_mean': by_val_speeds[nickname]['download_mbps_mean'],
                 'upload_mbps_mean': by_val_speeds[nickname]['upload_mbps_mean'],
