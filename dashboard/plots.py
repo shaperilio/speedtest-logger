@@ -1,5 +1,5 @@
 
-from typing import List, Dict, Any
+from typing import List, Dict, Tuple, Any
 import json
 import dateutil.parser
 from dateutil import tz
@@ -116,6 +116,8 @@ def proc_results(n_records: int) -> Dict[str, ColumnDataSource]:
     sources: Dict[str, ColumnDataSource] = {}
     for nickname in sorted(speeds.keys()):
         data = {'date': speeds[nickname]['date'],
+                'weekday': [d.weekday() for d in speeds[nickname]['date']],
+                'hour': [d.hour for d in speeds[nickname]['date']],
                 'download_mbps': speeds[nickname]['download_mbps'],
                 'upload_mbps': speeds[nickname]['upload_mbps'],
                 'nickname': speeds[nickname]['nickname'],
@@ -197,5 +199,75 @@ def down_up(sources: Dict[str, ColumnDataSource]) -> str:
     tap = TapTool()
     tap.callback = OpenURL(url='@url')
     fig.add_tools(hover, tap)
+
+    return file_html(fig, CDN, 'Speedtest log')
+
+
+def stats_by_val(by_val: Dict[str, ColumnDataSource], val_name: str) -> Dict[str, ColumnDataSource]:
+    by_val_speeds: Dict[str, Dict[str, list]] = {}
+    for nickname, source in by_val.items():
+        hours = source.data[val_name]
+        dns = source.data['download_mbps']
+        ups = source.data['upload_mbps']
+        by_hr: Dict[int, List[Tuple[float, float]]] = defaultdict(list)
+        for hour, dn, up in zip(hours, dns, ups):
+            by_hr[hour].append((dn, up))
+        by_hr = dict(sorted(by_hr.items(), key=lambda i: i[0]))
+
+        mean_dn_by_hr = [numpy.mean([i[0] for i in by_hr[k]]) for k in by_hr.keys()]
+        mean_up_by_hr = [numpy.mean([i[1] for i in by_hr[k]]) for k in by_hr.keys()]
+        std_dn_by_hr = [numpy.std([i[0] for i in by_hr[k]]) for k in by_hr.keys()]
+        std_up_by_hr = [numpy.std([i[1] for i in by_hr[k]]) for k in by_hr.keys()]
+
+        by_val_speeds[nickname] = {}
+        by_val_speeds[nickname][val_name] = list(by_hr.keys())
+        by_val_speeds[nickname]['download_mbps_mean'] = mean_dn_by_hr
+        by_val_speeds[nickname]['upload_mbps_mean'] = mean_up_by_hr
+        by_val_speeds[nickname]['download_mbps_std'] = std_dn_by_hr
+        by_val_speeds[nickname]['upload_mbps_std'] = std_up_by_hr
+
+    by_val: Dict[str, ColumnDataSource] = {}
+    for nickname in sorted(by_val_speeds.keys()):
+        n_hours = len(by_val_speeds[nickname][val_name])
+        data = {'nickname': [nickname] * n_hours,
+                val_name: by_val_speeds[nickname][val_name],
+                'download_mbps_mean': by_val_speeds[nickname]['download_mbps_mean'],
+                'upload_mbps_mean': by_val_speeds[nickname]['upload_mbps_mean'],
+                'download_mbps_std': by_val_speeds[nickname]['download_mbps_std'],
+                'upload_mbps_std': by_val_speeds[nickname]['upload_mbps_std'],
+                }
+        by_val[nickname] = ColumnDataSource(data)
+
+    return by_val
+
+
+def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
+    fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below')
+    fig.yaxis.axis_label = 'Transfer rate (Mbps)'
+
+    sources = stats_by_val(sources, 'hour')
+
+    dots: List[Scatter] = []
+    color = itertools.cycle(palette)
+    for nickname, source in sources.items():
+        source.data['hour']
+        c = next(color)
+        dots.extend([
+            line_dot(fig, source, x='hour', y='download_mbps_mean',
+                     legend_label=nickname, color=c, dashed=False),
+            line_dot(fig, source, x='hour', y='upload_mbps_mean',
+                     legend_label=nickname, color=c, dashed=True)
+        ])
+
+    hover = HoverTool(
+        tooltips=[
+            ('Interface', '@nickname'),
+            ('Avg down', '@download_mbps_mean{0.0} +/- @download_mbps_std{0.0} Mbps'),
+            ('Avg up rate', ' @upload_mbps_mean{0.0} +/- @upload_mbps_std{0.0} Mbps')
+        ],
+        mode='mouse',
+        renderers=dots,
+    )
+    fig.add_tools(hover)
 
     return file_html(fig, CDN, 'Speedtest log')
