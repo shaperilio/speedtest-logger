@@ -181,7 +181,7 @@ def down_up(sources: Dict[str, ColumnDataSource]) -> str:
         tooltips=[
             ('Interface', '@nickname'),
             ('Date', '@date{%Y-%m-%d %H:%M:%S}'),
-            ('Down / up rate', '@download_mbps{0.0} / @upload_mbps{0.0} MBps'),
+            ('Down / up rate', '@download_mbps{0.0} / @upload_mbps{0.0} Mbps'),
             ('Ping min - max (jitter)', '@idle_latency_stats'),
             ('Down latency min - max (jitter)', '@down_latency_stats'),
             ('Up latency min - max (jitter)', '@up_latency_stats'),
