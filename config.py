@@ -19,8 +19,8 @@ log_file: Union[bool, str] = './results/run.log'
 # """[Optional] Specify a specific Speedtest server by ID."""
 
 interfaces: Tuple[Tuple[str, str]] = (
-    ('eth1', 'ARC-XCI55AX'),
-    ('eth2', 'ASK-NCQ1338FA')
+    ('enx8cae4cdd62b9', 'ARC-XCI55AX'),
+    ('enx8cae4cdd62d6', 'ASK-NCQ1338FA')
 )
 """
 [Optional] Tuple of interface definitions to test. The first item in each tuple should be the

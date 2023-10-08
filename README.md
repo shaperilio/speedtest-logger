@@ -19,3 +19,7 @@ CLI](https://www.speedtest.net/apps/cli). You'll need to point to its path in
 
 # Configuration
 [`config.py`](config.py) controls behavior of collection and display of results.
+
+# Notes
+If you're running this with multiple interfaces, you may want to enable predictable interface names
+(this is done easily on Raspberry Pi).
