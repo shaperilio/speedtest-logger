@@ -279,6 +279,41 @@ def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
     fig.add_tools(hover)
 
     return file_html(fig, CDN, 'Speedtest log')
+
+
+def down_up_by_weekday(sources: Dict[str, ColumnDataSource]) -> str:
+    fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below')
+    fig.yaxis.axis_label = 'Transfer rate (Mbps)'
+    fig.xaxis.axis_label = 'Weekday'
+    ticks = {0: 'Mon',
+             1: 'Tue',
+             2: 'Wed',
+             3: 'Thu',
+             4: 'Fri',
+             5: 'Sat',
+             6: 'Sun'}
+    fig.xaxis.ticker = list(ticks.keys())
+    fig.xaxis.major_label_overrides = ticks
+    sources = stats_by_val(sources, 'weekday')
+
+    dots: List[Scatter] = []
+    color = itertools.cycle(palette)
+    for nickname, source in sources.items():
+        source.data['weekday']
+        c = next(color)
+        dots.extend([
+            line_dot(fig, source, x='weekday', y='download_mbps_mean',
+                     legend_label=nickname, color=c, dashed=False),
+            line_dot(fig, source, x='weekday', y='upload_mbps_mean',
+                     legend_label=nickname, color=c, dashed=True)
+        ])
+
+    hover = HoverTool(
+        tooltips=[
+            ('Interface', '@nickname'),
+            ('Avg down', '@download_mbps_mean{0.0} +/- @download_mbps_std{0.0} Mbps'),
+            ('Avg up rate', ' @upload_mbps_mean{0.0} +/- @upload_mbps_std{0.0} Mbps'),
+            ('Num tests', ' @num_tests{,}')
         ],
         mode='mouse',
         renderers=dots,

@@ -2,7 +2,7 @@ from flask import Flask
 
 import config
 
-from .plots import proc_results, smooth, down_up, down_up_by_hour
+from .plots import proc_results, smooth, down_up, down_up_by_hour, down_up_by_weekday
 
 app = Flask(__name__)
 
@@ -21,6 +21,14 @@ def hourly(n_records: str):
     sources = proc_results(int(n_records))
     smoothed = smooth(sources)
     return down_up_by_hour(smoothed)
+
+
+@app.route('/daily/', defaults={'n_records': config.n_records*10})
+@app.route('/daily/<n_records>')
+def daily(n_records: str):
+    sources = proc_results(int(n_records))
+    smoothed = smooth(sources)
+    return down_up_by_weekday(smoothed)
 
 
 @app.route('/favicon.ico')
