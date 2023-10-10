@@ -20,7 +20,8 @@ log_file: Union[bool, str] = './results/run.log'
 
 interfaces: Tuple[Tuple[str, str]] = (
     ('enx8cae4cdd62b9', 'ARC-XCI55AX'),
-    ('enx8cae4cdd62d6', 'ASK-NCQ1338FA')
+    ('enx8cae4cdd62d6', 'ASK-NCQ1338FA'),
+    ('enx8cae4cdd61e0', 'ARC-XCI55AX (new)'),
 )
 """
 [Optional] Tuple of interface definitions to test. The first item in each tuple should be the
