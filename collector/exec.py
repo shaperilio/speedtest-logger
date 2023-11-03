@@ -4,6 +4,7 @@ import os
 import time
 import json
 from datetime import datetime
+import socket
 
 import speedtest
 import config
@@ -97,6 +98,12 @@ while True:
     if hasattr(config, 'interfaces'):
         for name, nickname in config.interfaces:
             if not is_time_to_test(name):
+                continue
+            iface_names = [i[1] for i in socket.if_nameindex()]
+            if name not in iface_names:
+                avail = ', '.join([f'"{i}"' for i in iface_names])
+                _l.error(f'Interface "{name}", a.k.a. "{nickname}" is not in the system. '
+                         f'Available interfaces: {avail}.')
                 continue
             _l.info(f'Running test on interface "{name}", a.k.a. "{nickname}"...')
             result = _run(name, nickname)
