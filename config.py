@@ -15,8 +15,8 @@ results_db: str = './results/results.json'
 log_file: Union[bool, str] = './results/run.log'
 """Log file location. See `log.configure_logging`."""
 
-# server_id = '30989'
-# """[Optional] Specify a specific Speedtest server by ID."""
+server_id = '27781'  # Converse in Code Networks - Fremont, CA (id: 27781)
+"""[Optional] Specify a specific Speedtest server by ID."""
 
 interfaces: Tuple[Tuple[str, str]] = (
     ('enx8cae4cdd62b9', 'ARC-XCI55AX'),
