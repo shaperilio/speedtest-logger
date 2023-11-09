@@ -42,12 +42,12 @@ n_attempts: int = 5
 """Number of times to execute `speedtest` while the return code is not 0. Must be at least 1."""
 assert n_attempts > 0
 
-n_records = 300
+plot_hrs = 24
 """
-Maximum number of records to show on the plot by default.
+Maximum number of hours of results to to show on the plot by default.
 Changes to this only take effect at startup.
 """
-assert n_records > 0
+assert plot_hrs > 0
 
 n_time_avg = 5
 """Number of points to use for time average smoothing of the plot. Must be at least 1."""

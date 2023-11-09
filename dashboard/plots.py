@@ -55,7 +55,7 @@ def _latency_stats(latency: Dict[str, float]) -> str:
     return f'{l:.1f} - {h:.1f} ({j:.1f}) msec'
 
 
-def proc_results(n_records: Optional[int]) -> Dict[str, ColumnDataSource]:
+def proc_results(span_hrs: Optional[int]) -> Dict[str, ColumnDataSource]:
     config.refresh()
     filename = config.results_db
     with open(filename, 'r') as f:
@@ -63,9 +63,15 @@ def proc_results(n_records: Optional[int]) -> Dict[str, ColumnDataSource]:
     results = list(reversed(results))
     speeds: Dict[str, Dict[str, list]] = {}
     last_succeeded: Dict[str, bool] = {}  # for keeping track of consecutive failures.
-    n_to_plot: int = 0
+    first_timestamp_sec = None
     for idx in range(len(results)):
         result = results[idx]
+        utc = dateutil.parser.isoparse(result['timestamp'])
+        if first_timestamp_sec is None:
+            first_timestamp_sec = utc.timestamp()
+        else:
+            if span_hrs is not None and (first_timestamp_sec-utc.timestamp()) / 60 / 60 > span_hrs:
+                break  # We've exceed the maximum time span.
         nickname = result['nickname']
         if nickname not in last_succeeded.keys():
             # We need an initial value in case the first result is a failure.
@@ -98,9 +104,7 @@ def proc_results(n_records: Optional[int]) -> Dict[str, ColumnDataSource]:
         last_succeeded[nickname] = success
         if nickname not in speeds.keys():
             speeds[nickname] = defaultdict(list)
-        n_to_plot += 1
         speeds[nickname]['nickname'].append(nickname)
-        utc = dateutil.parser.isoparse(result['timestamp'])
         utc = utc.replace(tzinfo=tz.UTC)
         local = utc.astimezone(tz.tzlocal())
         speeds[nickname]['date'].append(local)
@@ -144,8 +148,6 @@ def proc_results(n_records: Optional[int]) -> Dict[str, ColumnDataSource]:
             speeds[nickname]['idle_latency_stats'].append('NT')
             speeds[nickname]['down_latency_stats'].append('NT')
             speeds[nickname]['up_latency_stats'].append('NT')
-        if n_records is not None and n_to_plot == n_records:
-            break
 
     sources: Dict[str, ColumnDataSource] = {}
     for nickname in sorted(speeds.keys()):
