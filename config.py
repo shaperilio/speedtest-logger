@@ -2,9 +2,11 @@ from typing import Tuple, Union
 
 test_interval_min: float = 20
 """How often to run the speed test. Note there's a 10 second resolution."""
+assert test_interval_min >= 10/60.0
 
 retry_interval_min: float = 1
 """How soon to re-run the speed test if there's an error. Note there's a 10 second resolution."""
+assert retry_interval_min >= 10/60.0
 
 speedtest_path: str = '/usr/bin/speedtest'
 """Path to Ooklah speedtest CLI executable."""
@@ -31,9 +33,12 @@ displaying results.
 
 n_attempts: int = 5
 """Number of times to execute `speedtest` while the return code is not 0. Must be at least 1."""
+assert n_attempts > 0
 
 n_records = 300
 """Maximum number of records to show on the plot."""
+assert n_records > 0
 
 n_time_avg = 5
 """Number of points to use for time average smoothing of the plot. Must be at least 1."""
+assert n_time_avg > 0

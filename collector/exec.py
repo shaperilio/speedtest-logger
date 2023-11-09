@@ -17,9 +17,6 @@ log.configure_logging(log_to_file=config.log_file)
 
 _l = logging.getLogger(__name__)
 
-if config.n_attempts < 1:
-    raise ValueError(f'Invalid value `{config.n_attempts=}`; should be at least 1.')
-
 
 def _isotime() -> str:
     return datetime.utcnow().isoformat()[:-4]+'Z'
