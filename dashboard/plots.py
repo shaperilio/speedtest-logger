@@ -60,19 +60,50 @@ def proc_results(n_records: Optional[int]) -> Dict[str, ColumnDataSource]:
     filename = config.results_db
     with open(filename, 'r') as f:
         results: List[Dict[str, Any]] = json.loads(f.read())
-
+    results = list(reversed(results))
     speeds: Dict[str, Dict[str, list]] = {}
-    for idx, result in enumerate(reversed(results)):
+    last_succeeded: Dict[str, bool] = {}  # for keeping track of consecutive failures.
+    n_to_plot: int = 0
+    for idx in range(len(results)):
+        result = results[idx]
+        nickname = result['nickname']
+        if nickname not in last_succeeded.keys():
+            # We need an initial value in case the first result is a failure.
+            # If the first result is a failure, we want to show it, so we set this to True
+            # regardless of the value of `success`.
+            last_succeeded[nickname] = True
+        success = bool(result['returnCode'] == 0)
+        if config.keep_consecutive_failures is False:  # need to check for consecutive failures.
+            # We need to check three things:
+            # 1. Did this test fail?
+            # 2. Did the previous test succeed? If so, we want to keep this failure.
+            # 3. Did the next test succeed? If so, we want to keep this failure.
+            # Otherwise, we discard this point, as it's got a failure on both sides.
+            if success is False:  # 1
+                if last_succeeded[nickname] is False:  # 2: last test also failed; do #3
+                    def get_next_success() -> bool:
+                        for n in range(idx+1, len(results)):  # 3a: look for next test.
+                            next_result = results[n]
+                            next_nickname = next_result['nickname']
+                            if next_nickname == nickname:
+                                # this is the next test
+                                next_success = bool(next_result['returnCode'] == 0)
+                                return next_success
+                        else:
+                            # Never found the next test. Abort.
+                            return True  # This ensures the current result is included.
+                    next_success = get_next_success()
+                    if next_success is False:  # 3b: next test is also a failure; skip.
+                        continue
+        last_succeeded[nickname] = success
+        if nickname not in speeds.keys():
+            speeds[nickname] = defaultdict(list)
+        n_to_plot += 1
+        speeds[nickname]['nickname'].append(nickname)
         utc = dateutil.parser.isoparse(result['timestamp'])
         utc = utc.replace(tzinfo=tz.UTC)
         local = utc.astimezone(tz.tzlocal())
-        success = bool(result['returnCode'] == 0)
-        nickname = result['nickname']
-        if nickname not in speeds.keys():
-            speeds[nickname] = defaultdict(list)
-        speeds[nickname]['nickname'].append(nickname)
         speeds[nickname]['date'].append(local)
-
         if success:
             try:
                 speedtest = result['output']
@@ -113,7 +144,7 @@ def proc_results(n_records: Optional[int]) -> Dict[str, ColumnDataSource]:
             speeds[nickname]['idle_latency_stats'].append('NT')
             speeds[nickname]['down_latency_stats'].append('NT')
             speeds[nickname]['up_latency_stats'].append('NT')
-        if n_records is not None and idx+1 == n_records:
+        if n_records is not None and n_to_plot == n_records:
             break
 
     sources: Dict[str, ColumnDataSource] = {}

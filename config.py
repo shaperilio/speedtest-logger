@@ -53,6 +53,15 @@ n_time_avg = 5
 """Number of points to use for time average smoothing of the plot. Must be at least 1."""
 assert n_time_avg > 0
 
+keep_consecutive_failures: bool = False
+"""
+True to show every failed test on the plot, False to show only the first failure and the last
+failure before success.
+Failed tests get retried every `retry_interval_min` which is often less than `test_interval_min` and
+thus it may be useful to not saturate the plot with lots of failures if e.g. an ISP is down for 2
+straight days.
+"""
+
 
 def refresh() -> None:
     """Reloads the configuration file and updates the `config` module."""
