@@ -15,7 +15,10 @@ results_db: str = './results/results.json'
 """Path to database results file."""
 
 log_file: Union[bool, str] = './results/run.log'
-"""Log file location. See `log.configure_logging`."""
+"""
+Log file location. See `log.configure_logging`.
+Changes to this only take effect at startup.
+"""
 
 server_id = '27781'  # Converse in Code Networks - Fremont, CA (id: 27781)
 """[Optional] Specify a specific Speedtest server by ID."""
@@ -36,9 +39,68 @@ n_attempts: int = 5
 assert n_attempts > 0
 
 n_records = 300
-"""Maximum number of records to show on the plot."""
+"""
+Maximum number of records to show on the plot by default.
+Changes to this only take effect at startup.
+"""
 assert n_records > 0
 
 n_time_avg = 5
 """Number of points to use for time average smoothing of the plot. Must be at least 1."""
 assert n_time_avg > 0
+
+
+def refresh() -> None:
+    """Reloads the configuration file and updates the `config` module."""
+    import os
+    import logging
+    import importlib.util
+    import sys
+
+    _l = logging.getLogger(__name__)
+
+    filename = __file__
+    if not os.path.exists(filename):
+        _l.error(f'Cannot find config file at "{filename}".')
+        return
+
+    code = open(filename, 'r', encoding='utf-8').read()
+
+    try:
+        # Much confusion here as to how to do this. `spec_from_loader` with `loader`
+        # set to None seems like nonsense, but that's the way it goes...
+        spec = importlib.util.spec_from_loader('config', loader=None, origin=filename)
+        if spec is None:
+            raise NotImplementedError  # No idea what to do with this
+        module = importlib.util.module_from_spec(spec)
+        # I want `__name__` and `__file__` to be available. From what I can tell, to
+        # put `__file__` in there, you have to make an actual `Loader` instance to
+        # override `get_filename`?
+        module.__file__ = filename
+        # NOTE: `__name__` has already been set by `spec_from_loader`
+        exec(code, module.__dict__)
+        module.refresh = refresh
+    except Exception as e:
+        _l.error(f'Failed to refresh config: {e}')
+        return
+
+    # If we've already been imported, shoehorn in the new version. This will update all references
+    # with the current config.
+    # NOTE: this is always True. When the importing system imports this file, it's already created a
+    # `sys.modules` key for it.
+    if __name__ in sys.modules.keys():
+        # Remove things no longer in the config module one by one, except for things in `keep`
+        # Note: we can't just clear the `__dict__`, because that dictionary, in this case, is also
+        # `globals`. So clearing it would "unimport" sys.
+        m_dict = sys.modules[__name__].__dict__
+        old_attrs = list(m_dict.keys())  # [k for k in list(m_dict.keys()) if k not in keep]
+        # Don't delete a few things:
+        old_attrs.remove('refresh')  # We'll need this.
+        old_attrs.remove('__warningregistry__')  # no idea what this is.
+        for k in old_attrs:
+            if k not in module.__dict__.keys():
+                del m_dict[k]
+        sys.modules[__name__].__dict__.update(module.__dict__)
+
+
+# refresh()

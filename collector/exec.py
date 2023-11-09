@@ -6,9 +6,10 @@ import json
 from datetime import datetime
 import socket
 
+from utils import log
 import speedtest
 import config
-from utils import log
+
 
 if isinstance(config.log_file, str):
     os.makedirs(os.path.dirname(config.log_file), exist_ok=True)
@@ -82,6 +83,7 @@ def set_wait_time(interface: str, result: dict) -> float:
 
 
 while True:
+    config.refresh()
     results_path = os.path.abspath(config.results_db)
     results: List[dict] = []
     if not os.path.exists(results_path):

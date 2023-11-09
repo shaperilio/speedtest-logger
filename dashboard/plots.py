@@ -56,6 +56,7 @@ def _latency_stats(latency: Dict[str, float]) -> str:
 
 
 def proc_results(n_records: Optional[int]) -> Dict[str, ColumnDataSource]:
+    config.refresh()
     filename = config.results_db
     with open(filename, 'r') as f:
         results: List[Dict[str, Any]] = json.loads(f.read())
@@ -148,6 +149,7 @@ def _time_average(vals: List[float], *, n_avg: int, keep_zero: bool) -> List[flo
 
 
 def smooth(sources: Dict[str, ColumnDataSource]) -> Dict[str, ColumnDataSource]:
+    config.refresh()
     n_avg = config.n_time_avg
     if n_avg < 1:
         raise ValueError(f'`n_time_avg` must be at least 1, got {config.n_time_avg}.')
