@@ -25,7 +25,7 @@ def get_speedify_dns(line: str) -> Optional[str]:
             return dns
 
 
-_l.info('Started monitoring `resolf.conf`...')
+_l.info('Started monitoring `resolv.conf`...')
 while True:
     config.refresh()
     try:
@@ -38,7 +38,7 @@ while True:
                 continue
             if (dns := get_speedify_dns(line)) is not None:
                 cleaned_resolv += f'# {line}'
-                _l.info(f'Removing "{dns}" from `resolf.conf`.')
+                _l.info(f'Removing "{dns}" from `resolv.conf`.')
                 continue
             cleaned_resolv += line
         if cleaned_resolv != resolv_conf:
