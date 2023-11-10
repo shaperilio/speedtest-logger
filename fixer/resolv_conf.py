@@ -14,7 +14,7 @@ log.configure_logging(log_to_file=config.resolv_conf_log_file)
 
 _l = logging.getLogger(__name__)
 
-filename = './results/resolv.conf'
+filename = '/etc/resolv.conf'
 
 
 def get_speedify_dns(line: str) -> Optional[str]:
