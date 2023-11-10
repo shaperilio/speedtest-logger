@@ -7,7 +7,7 @@ fi
 
 PYTHON=venv/bin/python
 
-echo "Running ``resolv.conf`` monitor on screen ``speedtest-logger-dashboard``..."
+echo "Running ``resolv.conf`` monitor on screen ``speedtest-logger-monitor``..."
 sudo screen -dmS speedtest-logger-monitor $PYTHON collector/exec.py
 
 exit 0
