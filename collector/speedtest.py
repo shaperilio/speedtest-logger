@@ -8,6 +8,9 @@ import config
 
 _l = logging.getLogger(__name__)
 
+limit_reached = 173
+"""Return code for exceeding the maximum number of requests over some period."""
+
 
 def run_speedtest(interface: Optional[str]) -> Tuple[int, Dict[str, Any]]:
     s = config.speedtest_path

@@ -44,6 +44,13 @@ def _run(interface: Optional[str], nickname: Optional[str]) -> Dict[str, Any]:
             if returncode == 0:
                 result['output'] = output
                 return result
+            if returncode == speedtest.limit_reached:
+                # We're being throttled for trying too often.
+                result['output'] = {'error': {'type': 'speedtest',
+                                              'message': 'Too many requests received.'}}
+                _l.error(f'[Attempt {a+1} of {config.n_attempts}] '
+                         f'`speedtest` exited with status {returncode}: too many requests.')
+                return result
 
             _l.error(f'[Attempt {a+1} of {config.n_attempts}] '
                      f'`speedtest` exited with status {returncode}.\n{output}')
@@ -75,7 +82,7 @@ def is_time_to_test(interface: str) -> bool:
 
 
 def set_wait_time(interface: str, result: dict) -> float:
-    if result['returnCode'] == 0:
+    if result['returnCode'] == 0 or result['returnCode'] == speedtest.limit_reached:
         waits_min[interface] = config.test_interval_min
     else:
         waits_min[interface] = config.retry_interval_min
