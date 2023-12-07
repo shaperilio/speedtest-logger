@@ -107,9 +107,12 @@ while True:
                 continue
             iface_names = [i[1] for i in socket.if_nameindex()]
             if name not in iface_names:
+                waits_min[name] = config.test_interval_min
+                last_test[name] = time.time()
                 avail = ', '.join([f'"{i}"' for i in iface_names])
                 _l.error(f'Interface "{name}", a.k.a. "{nickname}" is not in the system. '
-                         f'Available interfaces: {avail}.')
+                         f'Available interfaces: {avail}. '
+                         f'Will try again in {waits_min[name]} minutes...')
                 continue
             _l.info(f'Running test on interface "{name}", a.k.a. "{nickname}"...')
             result = _run(name, nickname)
