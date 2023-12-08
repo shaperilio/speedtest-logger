@@ -20,7 +20,7 @@ Log file location. See `log.configure_logging`.
 Changes to this only take effect at startup.
 """
 
-server_id: str = '27781'  # Converse in Code Networks - Fremont, CA (id: 27781)
+server_id: str = '9436'  # Comcast Sacramento, CA
 """
 [Optional] Specify a specific Speedtest server by ID.
 Comment this out if you don't want it.
