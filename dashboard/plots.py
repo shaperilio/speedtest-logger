@@ -49,10 +49,10 @@ def line_dot(fig: figure,
 
 
 def _latency_stats(latency: Dict[str, float]) -> str:
-    l = float(latency['low'])
-    h = float(latency['high'])
-    j = float(latency['jitter'])
-    return f'{l:.1f} - {h:.1f} ({j:.1f}) msec'
+    lo = float(latency['low'])
+    hi = float(latency['high'])
+    jt = float(latency['jitter'])
+    return f'{lo:.1f} - {hi:.1f} ({jt:.1f}) msec'
 
 
 def proc_results(span_hrs: Optional[int]) -> Dict[str, ColumnDataSource]:
