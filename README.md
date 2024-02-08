@@ -18,7 +18,8 @@ CLI](https://www.speedtest.net/apps/cli). You'll need to point to its path in
 [`config.py`](config.py).
 
 # Configuration
-[`config.py`](config.py) controls behavior of collection and display of results.
+[`config.py`](config.py) controls behavior of collection and display of results. You need to restart
+the collector and dashboard scripts if any changes are made.
 
 # Notes
 If you're running this with multiple interfaces, you may want to enable predictable interface names
