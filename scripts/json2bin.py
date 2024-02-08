@@ -23,3 +23,10 @@ with TimeIt('Reading binary file'):
     bin_results = results_file.load(bin_filename)
 
 assert bin_results == list(reversed(json_results))
+
+
+# Results on Raspberry Pi, with a ~70MB JSON file:
+# Loading JSON result...done in 2.377 seconds.
+# Writing binary file...done in 2.918 seconds.
+# Reading binary file...done in 3.142 seconds.
+# Binary file is not worth it.
