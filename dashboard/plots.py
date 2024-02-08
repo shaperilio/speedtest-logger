@@ -60,7 +60,7 @@ def _latency_stats(latency: Dict[str, float]) -> str:
 def proc_results(span_hrs: Optional[int]) -> Dict[str, ColumnDataSource]:
     config.refresh()
     filename = config.results_db
-    with TimeIt('Opening JSON results file', log_name=__name__):
+    with TimeIt('Opening JSON results file', log_name=None):
         with open(filename, 'r') as f:
             results: List[Dict[str, Any]] = json.loads(f.read())
     results = list(reversed(results))
