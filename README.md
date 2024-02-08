@@ -13,7 +13,7 @@ environment) are there.
 Once the dashboard is running, you'll be able to see it at http://localhost:10000.
 
 # Prerequisites
-Python 3.8+ should be installed. You should also install the [Oklah Speedtest
+Python 3.8+ should be installed. You should also install the [Ooklah Speedtest
 CLI](https://www.speedtest.net/apps/cli). You'll need to point to its path in
 [`config.py`](config.py).
 
