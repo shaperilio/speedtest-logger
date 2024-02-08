@@ -13,14 +13,17 @@ environment) are there.
 Once the dashboard is running, you'll be able to see it at http://localhost:10000.
 
 # Prerequisites
+
 Python 3.8+ should be installed. You should also install the [Ooklah Speedtest
 CLI](https://www.speedtest.net/apps/cli). You'll need to point to its path in
 [`config.py`](config.py).
 
 # Configuration
+
 [`config.py`](config.py) controls behavior of collection and display of results. You need to restart
 the collector and dashboard scripts if any changes are made.
 
 # Notes
+
 If you're running this with multiple interfaces, you may want to enable predictable interface names
 (this is done easily on Raspberry Pi).
