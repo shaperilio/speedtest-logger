@@ -14,7 +14,9 @@ from bokeh.models import ColumnDataSource, HoverTool, Scatter, OpenURL, TapTool
 from bokeh.palettes import Category10_10 as palette
 from bokeh.resources import CDN
 from bokeh.embed import file_html
+
 import config
+from utils.timing import TimeIt
 
 _l = logging.getLogger(__name__)
 
@@ -58,8 +60,9 @@ def _latency_stats(latency: Dict[str, float]) -> str:
 def proc_results(span_hrs: Optional[int]) -> Dict[str, ColumnDataSource]:
     config.refresh()
     filename = config.results_db
-    with open(filename, 'r') as f:
-        results: List[Dict[str, Any]] = json.loads(f.read())
+    with TimeIt('Opening JSON results file', log_name=__name__):
+        with open(filename, 'r') as f:
+            results: List[Dict[str, Any]] = json.loads(f.read())
     results = list(reversed(results))
     speeds: Dict[str, Dict[str, list]] = {}
     last_succeeded: Dict[str, bool] = {}  # for keeping track of consecutive failures.
