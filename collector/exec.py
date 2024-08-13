@@ -133,7 +133,7 @@ def _record(interface: Optional[str], nickname: Optional[str]) -> None:
     last_test[name] = time.time()
 
 
-def _interface_exists(interface: str, nickname: str) - > bool:
+def _interface_exists(interface: str, nickname: str) -> bool:
     iface_names = [i[1] for i in socket.if_nameindex()]
     if interface not in iface_names:
         waits_min[interface] = config.test_interval_min
