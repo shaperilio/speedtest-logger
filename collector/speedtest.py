@@ -12,17 +12,14 @@ limit_reached = 173
 """Return code for exceeding the maximum number of requests over some period."""
 
 
-def _parse_output(f: TextIO) -> Dict[str, Any]:
+def _parse_output(out: str) -> Dict[str, Any]:
     """
-    Parses the output written to open file `f`, assuming the last line is valid
-    JSON content.
+    Parses the output string, assuming the last line is valid JSON content.
 
     Around 2024-08-12, the output of `speedtest` started including more than
     one independent JSON string, so decoding the thing as a whole raised
     exceptions.
     """
-    f.seek(0)
-    out = f.read()
     lines = out.split('\n')
     return json.loads(lines[-1])
 
@@ -48,15 +45,19 @@ def run_speedtest(interface: Optional[str]) -> Tuple[int, Dict[str, Any]]:
     dump_file = (os.path.dirname(os.path.abspath(config.results_db))
                  + f'/last_speedtest_{interface}.out')
 
-    with open(dump_file, 'w') as f:
+    try:
+        f = open(dump_file, 'w')
         f.write(f'> {cmd}\n')
         try:
-            result_out = subprocess.check_output(args, stderr=subprocess.STDOUT)
-            f.write(result_out.decode())
-            result_json = _parse_output(f)
+            result_out = subprocess.check_output(args, stderr=subprocess.STDOUT).decode()
+            f.write(result_out)
+            f.close()
+            result_json = _parse_output(result_out)
             returncode = 0
         except subprocess.CalledProcessError as e:
             result_json = {}
             returncode = e.returncode
+    finally:
+        f.close()
 
     return returncode, result_json
