@@ -21,7 +21,7 @@ def _parse_output(out: str) -> Dict[str, Any]:
     exceptions.
     """
     lines = out.split('\n')
-    return json.loads(lines[-1])
+    return json.loads(lines[-2])
 
 
 def run_speedtest(interface: Optional[str]) -> Tuple[int, Dict[str, Any]]:
