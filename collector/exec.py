@@ -68,8 +68,6 @@ waits_min: Dict[str, float] = {}
 """How long to wait to retest each interface."""
 last_test: Dict[str, float] = {}
 """Last time each interface was tested."""
-write_results: bool = False
-"""Whether or not results need to be written to disk."""
 
 
 def is_time_to_test(interface: str) -> bool:
@@ -89,17 +87,36 @@ def set_wait_time(interface: str, result: dict) -> float:
     return waits_min[interface]
 
 
-while True:
-    config.refresh()
-    results_path = os.path.abspath(config.results_db)
-    results: List[dict] = []
+def _load_results_from_disk(results_path: str) -> List[dict]:
     if not os.path.exists(results_path):
         _l.debug(f'Results file "{results_path}" does not exist.')
         os.makedirs(os.path.dirname(results_path), exist_ok=True)
+        return []
     else:
         _l.debug(f'Loading results from "{results_path}"...')
         with open(results_path, 'r') as f:
-            results = json.loads(f.read())
+            return json.loads(f.read())
+
+
+def _save_results_to_disk(results_path: str, results: List[dict]) -> None:
+    temp_results_path = results_path+'.tmp'
+    _l.debug(f'Saving results to "{temp_results_path}".')
+    with open(temp_results_path, 'w') as f:
+        f.write(json.dumps(results, sort_keys=True, indent=4))
+    _l.debug(f'Transferring results to "{results_path}".')
+    os.replace(temp_results_path, results_path)
+
+
+def _append_result(result: dict) -> None:
+    result = _run(name, nickname)
+    results = _load_results_from_disk(results_path)
+    results.append(result)
+    _save_results_to_disk(results_path, results)
+
+
+while True:
+    config.refresh()
+    results_path = os.path.abspath(config.results_db)
 
     if hasattr(config, 'interfaces'):
         for name, nickname in config.interfaces:
@@ -116,8 +133,7 @@ while True:
                 continue
             _l.info(f'Running test on interface "{name}", a.k.a. "{nickname}"...')
             result = _run(name, nickname)
-            results.append(result)
-            write_results = True
+            _append_result(result)
             interval_min = set_wait_time(name, result)
             _l.info(f'Will test again on interface "{name}", a.k.a. "{nickname}" '
                     f'in {interval_min} minutes...')
@@ -126,19 +142,9 @@ while True:
         if is_time_to_test('all'):
             _l.info('Running test without specifying interface...')
             result = _run(interface=None, nickname=None)
-            results.append(result)
-            write_results = True
+            _append_result(result)
             interval_min = set_wait_time('all', result)
             _l.info(f'Will test again in {interval_min} minutes...')
             last_test['all'] = time.time()
-
-    if write_results:
-        temp_results_path = results_path+'.tmp'
-        _l.debug(f'Saving results to "{temp_results_path}".')
-        with open(temp_results_path, 'w') as f:
-            f.write(json.dumps(results, sort_keys=True, indent=4))
-        _l.debug(f'Transferring results to "{results_path}".')
-        os.replace(temp_results_path, results_path)
-        write_results = False
 
     time.sleep(10)
