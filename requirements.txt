@@ -1,4 +1,6 @@
 colorama
 bokeh
 flask
+python-dateutil
+numpy
 -e .
