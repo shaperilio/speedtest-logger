@@ -133,9 +133,13 @@ while True:
             last_test['all'] = time.time()
 
     if write_results:
-        _l.debug(f'Saving results to "{results_path}".')
-        with open(results_path, 'w') as f:
+        temp_results_path = results_path+'.tmp'
+        _l.debug(f'Saving results to "{temp_results_path}".')
+        with open(temp_results_path, 'w') as f:
             f.write(json.dumps(results, sort_keys=True, indent=4))
+        _l.debug(f'Transferring results to "{results_path}".')
+        os.replace(temp_results_path, results_path)
+        os.remove(temp_results_path)
         write_results = False
 
     time.sleep(10)
