@@ -139,7 +139,6 @@ while True:
             f.write(json.dumps(results, sort_keys=True, indent=4))
         _l.debug(f'Transferring results to "{results_path}".')
         os.replace(temp_results_path, results_path)
-        os.remove(temp_results_path)
         write_results = False
 
     time.sleep(10)
