@@ -1,13 +1,12 @@
-
-from typing import List, Dict, Tuple, Any, Optional
+from typing import List, Sequence, Dict, Tuple, Any, Optional
 import json
-import dateutil.parser
-from dateutil import tz
 from collections import defaultdict
 import itertools
 import logging
 
 import numpy
+import dateutil.parser
+from dateutil import tz
 
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool, Scatter, OpenURL, TapTool
