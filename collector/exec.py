@@ -70,7 +70,7 @@ last_test: Dict[str, float] = {}
 """Last time each interface was tested."""
 
 
-def is_time_to_test(interface: str) -> bool:
+def _is_time_to_test(interface: str) -> bool:
     # Note default values guarantee a return value of True
     delta_sec = time.time() - last_test.get(interface, 0)
     if delta_sec >= waits_min.get(interface, 0) * 60:
@@ -79,7 +79,7 @@ def is_time_to_test(interface: str) -> bool:
         return False
 
 
-def set_wait_time(interface: str, result: dict) -> float:
+def _set_wait_time(interface: str, result: dict) -> float:
     if result['returnCode'] == 0 or result['returnCode'] == speedtest.limit_reached:
         waits_min[interface] = config.test_interval_min
     else:
@@ -114,37 +114,46 @@ def _append_result(result: dict) -> None:
     _save_results_to_disk(results_path, results)
 
 
+def _record(interface: Optional[str], nickname: Optional[str]) -> None:
+    if interface is None:
+        _l.info('Running test without specifying interface...')
+        name = 'all'
+    else:
+        _l.info(f'Running test on interface "{name}", a.k.a. "{nickname}"...')
+        name = interface
+
+    if not _is_time_to_test(name):
+        return
+
+    result = _run(interface, nickname)
+    _append_result(result)
+    interval_min = _set_wait_time(name, result)
+    _l.info(f'Will test again on interface "{name}", a.k.a. "{nickname}" '
+            f'in {interval_min} minutes...')
+    last_test[name] = time.time()
+
+
+def _interface_exists(interface: str, nickname: str) - > bool:
+    iface_names = [i[1] for i in socket.if_nameindex()]
+    if interface not in iface_names:
+        waits_min[interface] = config.test_interval_min
+        last_test[interface] = time.time()
+        avail = ', '.join([f'"{i}"' for i in iface_names])
+        _l.error(f'Interface "{interface}", a.k.a. "{nickname}" is not in the system. '
+                 f'Available interfaces: {avail}. '
+                 f'Will try again in {waits_min[interface]} minutes...')
+
+
 while True:
     config.refresh()
     results_path = os.path.abspath(config.results_db)
 
     if hasattr(config, 'interfaces'):
         for name, nickname in config.interfaces:
-            if not is_time_to_test(name):
+            if not _interface_exists(name, nickname):
                 continue
-            iface_names = [i[1] for i in socket.if_nameindex()]
-            if name not in iface_names:
-                waits_min[name] = config.test_interval_min
-                last_test[name] = time.time()
-                avail = ', '.join([f'"{i}"' for i in iface_names])
-                _l.error(f'Interface "{name}", a.k.a. "{nickname}" is not in the system. '
-                         f'Available interfaces: {avail}. '
-                         f'Will try again in {waits_min[name]} minutes...')
-                continue
-            _l.info(f'Running test on interface "{name}", a.k.a. "{nickname}"...')
-            result = _run(name, nickname)
-            _append_result(result)
-            interval_min = set_wait_time(name, result)
-            _l.info(f'Will test again on interface "{name}", a.k.a. "{nickname}" '
-                    f'in {interval_min} minutes...')
-            last_test[name] = time.time()
+            _record(interface=name, nickname=nickname)
     else:
-        if is_time_to_test('all'):
-            _l.info('Running test without specifying interface...')
-            result = _run(interface=None, nickname=None)
-            _append_result(result)
-            interval_min = set_wait_time('all', result)
-            _l.info(f'Will test again in {interval_min} minutes...')
-            last_test['all'] = time.time()
+        _record(interface=None, nickname=None)
 
     time.sleep(10)
