@@ -143,6 +143,8 @@ def _interface_exists(interface: str, nickname: str) -> bool:
         _l.error(f'Interface "{interface}", a.k.a. "{nickname}" is not in the system. '
                  f'Available interfaces: {avail}. '
                  f'Will try again in {waits_min[interface]} minutes...')
+        return False
+    return True
 
 
 while True:
