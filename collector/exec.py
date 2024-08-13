@@ -7,7 +7,7 @@ from datetime import datetime
 import socket
 
 from utils import log
-import speedtest
+from . import speedtest
 import config
 
 
