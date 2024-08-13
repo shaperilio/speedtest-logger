@@ -108,6 +108,7 @@ def _save_results_to_disk(results_path: str, results: List[dict]) -> None:
 
 
 def _append_result(result: dict) -> None:
+    results_path = os.path.abspath(config.results_db)
     result = _run(name, nickname)
     results = _load_results_from_disk(results_path)
     results.append(result)
@@ -146,7 +147,6 @@ def _interface_exists(interface: str, nickname: str) -> bool:
 
 while True:
     config.refresh()
-    results_path = os.path.abspath(config.results_db)
 
     if hasattr(config, 'interfaces'):
         for name, nickname in config.interfaces:
