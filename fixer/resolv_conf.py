@@ -23,6 +23,7 @@ def get_speedify_dns(line: str) -> Optional[str]:
     for dns in speedify_dns:
         if dns in line:
             return dns
+    return None
 
 
 _l.info('Started monitoring `resolv.conf`...')

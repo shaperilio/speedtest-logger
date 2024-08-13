@@ -19,8 +19,8 @@ def main(plot_hrs: str):
 @app.route('/hourly/<plot_hrs>')
 def hourly(plot_hrs: str):
     if plot_hrs is not None:
-        plot_hrs = int(plot_hrs)
-    sources = proc_results(plot_hrs)
+        span_hrs = int(plot_hrs)
+    sources = proc_results(span_hrs)
     smoothed = smooth(sources)
     return down_up_by_hour(smoothed)
 
@@ -29,8 +29,8 @@ def hourly(plot_hrs: str):
 @app.route('/daily/<plot_hrs>')
 def daily(plot_hrs: str):
     if plot_hrs is not None:
-        plot_hrs = int(plot_hrs)
-    sources = proc_results(plot_hrs)
+        span_hrs = int(plot_hrs)
+    sources = proc_results(span_hrs)
     smoothed = smooth(sources)
     return down_up_by_weekday(smoothed)
 

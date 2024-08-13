@@ -26,7 +26,7 @@ server_id: str = '9436'  # Comcast Sacramento, CA
 Comment this out if you don't want it.
 """
 
-interfaces: Tuple[Tuple[str, str]] = (
+interfaces: Tuple[Tuple[str, str], ...] = (
     ('enx8cae4cdd62b9', 'ARC-XCI55AX'),
     ('enx8cae4cdd62d6', 'ASK-NCQ1338FA'),
 )
@@ -101,7 +101,7 @@ def refresh() -> None:
         module.__file__ = filename
         # NOTE: `__name__` has already been set by `spec_from_loader`
         exec(code, module.__dict__)
-        module.refresh = refresh
+        module.refresh = refresh  # type: ignore[attr-defined]
     except Exception as e:
         _l.error(f'Failed to refresh config: {e}')
         return

@@ -1,4 +1,4 @@
-from typing import List, Sequence, Dict, Tuple, Any, Optional
+from typing import List, Sequence, Dict, Tuple, Any, Optional, cast
 import json
 from collections import defaultdict
 import itertools
@@ -169,7 +169,7 @@ def proc_results(span_hrs: Optional[int]) -> Dict[str, ColumnDataSource]:
     return sources
 
 
-def _time_average(vals: List[float], *, n_avg: int, keep_zero: bool) -> List[float]:
+def _time_average(vals: Sequence[float], *, n_avg: int, keep_zero: bool) -> List[float]:
     window = [vals[0]] * n_avg
     averaged: List[float] = []
     for i in range(len(vals)):
@@ -179,7 +179,7 @@ def _time_average(vals: List[float], *, n_avg: int, keep_zero: bool) -> List[flo
         if keep_zero and val == 0:
             averaged.append(val)
         else:
-            averaged.append(numpy.mean(window))
+            averaged.append(float(numpy.mean(window)))
     return averaged
 
 
@@ -196,9 +196,10 @@ def smooth(sources: Dict[str, ColumnDataSource]) -> Dict[str, ColumnDataSource]:
         data: Dict[str, list] = {}
         for key in cds.data.keys():
             if key in ['download_mbps', 'upload_mbps']:
-                data[key] = _time_average(cds.data[key], n_avg=n_avg, keep_zero=True)
+                data[key] = _time_average(cast(Sequence[float], cds.data[key]),
+                                          n_avg=n_avg, keep_zero=True)
             else:
-                data[key] = cds.data[key]
+                data[key] = cast(list, cds.data[key])
         smoothed[source] = ColumnDataSource(data=data)
     return smoothed
 
@@ -237,16 +238,16 @@ def down_up(sources: Dict[str, ColumnDataSource]) -> str:
         renderers=dots,
     )
     tap = TapTool()
-    tap.callback = OpenURL(url='@url')
+    tap.callback = OpenURL(url='@url')  # type: ignore[assignment]
     fig.add_tools(hover, tap)
 
     return file_html(fig, CDN, 'Speedtest log')
 
 
-def down_up_by_val(source: Dict[str, ColumnDataSource],
+def down_up_by_val(sources: Dict[str, ColumnDataSource],
                    val_name: str) -> Dict[str, ColumnDataSource]:
     by_val_speeds: Dict[str, Dict[str, list]] = {}
-    for nickname, source in source.items():
+    for nickname, source in sources.items():
         vals = source.data[val_name]
         dns = source.data['download_mbps']
         ups = source.data['upload_mbps']
