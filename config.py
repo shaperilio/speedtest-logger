@@ -48,6 +48,18 @@ Changes to this only take effect at startup.
 """
 assert plot_hrs > 0
 
+hourly_plot_days = 10
+"""
+Default number of days' worth of data to show in the hourly plot.
+Changes to this only take effect at startup.
+"""
+
+daily_plot_days = 28
+"""
+Default number of days' worth of data to show in the daily plot.
+Changes to this only take effect at startup.
+"""
+
 n_time_avg = 5
 """Number of points to use for time average smoothing of the plot. Must be at least 1."""
 assert n_time_avg > 0
