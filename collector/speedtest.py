@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any, Tuple, TextIO
+from typing import List, Optional, Dict, Any, Tuple
 import json
 import os
 import logging
