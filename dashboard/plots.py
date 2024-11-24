@@ -39,13 +39,13 @@ def line_dot(fig: figure,
              legend_label=legend_label,
              line_dash=line_dash,
              )
-    d = fig.circle(x=x, y=y, source=source,
-                   size=6,
-                   fill_color='white',
-                   line_width=2,
-                   line_color=color,
-                   legend_label=legend_label,
-                   )
+    d = fig.scatter(x=x, y=y, source=source,
+                    size=6,
+                    fill_color='white',
+                    line_width=2,
+                    line_color=color,
+                    legend_label=legend_label,
+                    )
     return d
 
 
