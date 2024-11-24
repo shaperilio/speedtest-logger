@@ -62,7 +62,7 @@ Changes to this only take effect at startup.
 
 n_time_avg = 5
 """Number of points to use for time average smoothing of the plot. Must be at least 1."""
-assert n_time_avg > 0
+assert n_time_avg >= 1
 
 keep_consecutive_failures: bool = False
 """

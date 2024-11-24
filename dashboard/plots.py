@@ -186,8 +186,6 @@ def _time_average(vals: Sequence[float], *, n_avg: int, keep_zero: bool) -> List
 def smooth(sources: Dict[str, ColumnDataSource]) -> Dict[str, ColumnDataSource]:
     config.refresh()
     n_avg = config.n_time_avg
-    if n_avg < 1:
-        raise ValueError(f'`n_time_avg` must be at least 1, got {config.n_time_avg}.')
     if n_avg == 1:
         return sources
 
