@@ -1,33 +1,67 @@
-from flask import Flask
+from typing import Dict
+from threading import Thread
+import time
+
+from flask import Flask, request
+from bokeh.models import ColumnDataSource
 
 import config
+from .plots import (proc_results,
+                    filter,
+                    smooth,
+                    down_up,
+                    down_up_by_hour,
+                    down_up_by_weekday)
 
-from .plots import proc_results, smooth, down_up, down_up_by_hour, down_up_by_weekday
-
+from utils.timing import TimeIt
 app = Flask(__name__)
 
+_all_data: Dict[str, ColumnDataSource] = {}
 
-@app.route('/', defaults={'plot_hrs': str(config.plot_hrs)})
-@app.route('/<plot_hrs>')
-def main(plot_hrs: str):
-    sources = proc_results(int(plot_hrs))
-    smoothed = smooth(sources)
+
+def _data_grabber():
+    global _all_data
+    with TimeIt('`proc_results` (in a thread)', single_line=False):
+        _all_data = proc_results(span_hrs=None)
+    config.refresh()
+    time.sleep(config.data_load_interval_min*60)
+
+
+t = Thread(target=_data_grabber, daemon=True)
+t.start()
+
+
+def _get_plot_hrs() -> int:
+    if 'days' in request.args.keys():
+        plot_hrs = int(float(request.args['days'])*24)
+    elif 'hours' in request.args.keys():
+        plot_hrs = int(float(request.args['hours']))
+    else:
+        plot_hrs = config.plot_hrs
+    return plot_hrs
+
+
+@app.route('/')
+@app.route('/log')
+def main():
+    with TimeIt('`filter`'):
+        filtered = filter(_all_data, _get_plot_hrs())
+    with TimeIt('`smooth`'):
+        smoothed = smooth(filtered)
     return down_up(smoothed)
 
 
-@app.route('/hourly/', defaults={'plot_hrs': str(config.hourly_plot_days * 24)})
-@app.route('/hourly/<plot_hrs>')
-def hourly(plot_hrs: str):
-    sources = proc_results(int(plot_hrs))
-    smoothed = smooth(sources)
+@app.route('/hourly')
+def hourly():
+    filtered = filter(_all_data, _get_plot_hrs())
+    smoothed = smooth(filtered)
     return down_up_by_hour(smoothed)
 
 
-@app.route('/daily/', defaults={'plot_hrs': str(config.daily_plot_days * 24)})
-@app.route('/daily/<plot_hrs>')
-def daily(plot_hrs: str):
-    sources = proc_results(int(plot_hrs))
-    smoothed = smooth(sources)
+@app.route('/daily')
+def daily():
+    filtered = filter(_all_data, _get_plot_hrs())
+    smoothed = smooth(filtered)
     return down_up_by_weekday(smoothed)
 
 

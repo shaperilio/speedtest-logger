@@ -3,6 +3,7 @@ import json
 from collections import defaultdict
 import itertools
 import logging
+from datetime import datetime
 
 import numpy
 import dateutil.parser
@@ -57,6 +58,7 @@ def _latency_stats(latency: Dict[str, float]) -> str:
 
 
 def proc_results(span_hrs: Optional[int]) -> Dict[str, ColumnDataSource]:
+    """Returns a `ColumnDataSource` for each interface, keyed by nickname."""
     config.refresh()
     filename = config.results_db
     with TimeIt('Opening JSON results file', log_name=None):
@@ -153,20 +155,48 @@ def proc_results(span_hrs: Optional[int]) -> Dict[str, ColumnDataSource]:
 
     sources: Dict[str, ColumnDataSource] = {}
     for nickname in sorted(speeds.keys()):
-        data = {'date': speeds[nickname]['date'],
-                'weekday': [d.weekday() for d in speeds[nickname]['date']],
-                'hour': [d.hour for d in speeds[nickname]['date']],
-                'success': speeds[nickname]['success'],
-                'download_mbps': speeds[nickname]['download_mbps'],
-                'upload_mbps': speeds[nickname]['upload_mbps'],
-                'nickname': speeds[nickname]['nickname'],
-                'url': speeds[nickname]['url'],
-                'idle_latency_stats': speeds[nickname]['idle_latency_stats'],
-                'down_latency_stats': speeds[nickname]['down_latency_stats'],
-                'up_latency_stats': speeds[nickname]['up_latency_stats'],
-                }
+        data = {
+            'date': speeds[nickname]['date'],
+            'weekday': [d.weekday() for d in speeds[nickname]['date']],
+            'hour': [d.hour for d in speeds[nickname]['date']],
+            'success': speeds[nickname]['success'],
+            'download_mbps': speeds[nickname]['download_mbps'],
+            'upload_mbps': speeds[nickname]['upload_mbps'],
+            'nickname': speeds[nickname]['nickname'],
+            'url': speeds[nickname]['url'],
+            'idle_latency_stats': speeds[nickname]['idle_latency_stats'],
+            'down_latency_stats': speeds[nickname]['down_latency_stats'],
+            'up_latency_stats': speeds[nickname]['up_latency_stats'],
+        }
         sources[nickname] = ColumnDataSource(data)
     return sources
+
+
+def filter(sources: Dict[str, ColumnDataSource], span_hrs: int) -> Dict[str, ColumnDataSource]:
+    """Returns `sources` with data for only the most recent `span_hrs`."""
+    now = datetime.now().replace(tzinfo=tz.tzlocal())
+    cutoff_by_nickname: Dict[str, int] = {}
+
+    def find_span_idx(dates: List[datetime]) -> int:
+        for idx, date in enumerate(dates):
+            diff_hours = (now-date).total_seconds() / (60 * 60)
+            if diff_hours > span_hrs:
+                return idx
+        return len(dates) - 1
+
+    for nickname, data in sources.items():
+        data_dates: List[datetime] = data.data['date']
+        cutoff_by_nickname[nickname] = find_span_idx(data_dates)
+
+    # Now create new `ColumnDataSource`s cut off for the given span.
+    filtered: Dict[str, ColumnDataSource] = {}
+    for nickname, data in sources.items():
+        e = cutoff_by_nickname[nickname]
+        if e == 0:
+            continue  # don't show this interface
+        data = {field: seq[0:e] for field, seq in sources[nickname].data.items()}
+        filtered[nickname] = ColumnDataSource(data=data)
+    return filtered
 
 
 def _time_average(vals: Sequence[float], *, n_avg: int, keep_zero: bool) -> List[float]:

@@ -14,6 +14,10 @@ speedtest_path: str = '/usr/bin/speedtest'
 results_db: str = './results/results.json'
 """Path to database results file."""
 
+data_load_interval_min: float = 5
+"""How often to load data from disk."""
+assert data_load_interval_min > 0
+
 log_file: Union[bool, str] = './results/run.log'
 """
 Log file location. See `log.configure_logging`.
