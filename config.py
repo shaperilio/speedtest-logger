@@ -73,16 +73,6 @@ thus it may be useful to not saturate the plot with lots of failures if e.g. an 
 straight days.
 """
 
-resolv_conf_check_interval_sec: int = 5
-"""How often to check `resolv.conf` for Speedify DNS servers."""
-assert resolv_conf_check_interval_sec > 0
-
-resolv_conf_log_file: Union[bool, str] = './results/resolv_conf.log'
-"""
-Log file location for `resolv.conf` monitoring. See `log.configure_logging`.
-Changes to this only take effect at startup.
-"""
-
 
 def refresh() -> None:
     """Reloads the configuration file and updates the `config` module."""
