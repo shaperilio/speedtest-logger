@@ -6,12 +6,12 @@ from flask import Flask, request
 from bokeh.models import ColumnDataSource
 
 import config
-from .plots import (proc_results,
-                    filter,
-                    smooth,
-                    down_up,
+from .data import (proc_results,
+                   filter,
+                   smooth,)
+from .plots import (down_up,
                     down_up_by_hour,
-                    down_up_by_weekday)
+                    down_up_by_weekday,)
 
 from utils.timing import TimeIt
 app = Flask(__name__)
