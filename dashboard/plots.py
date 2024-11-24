@@ -235,7 +235,7 @@ def smooth(sources: Dict[str, ColumnDataSource]) -> Dict[str, ColumnDataSource]:
 def down_up(sources: Dict[str, ColumnDataSource]) -> str:
     fig = figure(height=500, width=1500, toolbar_location=None,
                  x_axis_type='datetime', x_axis_location='below',
-                 sizing_mode='stretch_width')
+                 sizing_mode='stretch_width', tools=[])
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
 
     dots: List[Scatter] = []
@@ -327,7 +327,7 @@ def down_up_by_val(sources: Dict[str, ColumnDataSource],
 
 
 def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
-    fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below')
+    fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below', tools=[])
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
     fig.xaxis.axis_label = 'Hour of day'
     fig.xaxis.ticker = list(range(24))
@@ -362,7 +362,7 @@ def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
 
 
 def down_up_by_weekday(sources: Dict[str, ColumnDataSource]) -> str:
-    fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below')
+    fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below', tools=[])
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
     fig.xaxis.axis_label = 'Weekday'
     ticks = {0: 'Mon',
