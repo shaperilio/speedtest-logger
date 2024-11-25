@@ -1,12 +1,13 @@
-from typing import Optional, Callable
+from typing import Optional, Union, Callable
 import time
 import logging
+from logging import Logger
 
 
 class TimeIt:
     def __init__(self, msg: str,
                  single_line: bool = True,
-                 log_name: Optional[str] = None) -> None:
+                 log: Optional[Union[str, Logger]] = None) -> None:
         """
         Simple class for timing, use as a context.
 
@@ -16,16 +17,22 @@ class TimeIt:
             The message to show, i.e. what task you're timing.
 
         single_line : bool = True
-            True to show output in a single line, False if you expect your task to also put things
-            on the screen.
+            True to show output in a single line, False if you expect your task
+            to also put things on the screen.
 
-        log_name: Optional[str] = None
-            If None, output using `print`, otherwise, log to the log with this name at DEBUG level.
+        log: Optional[Union[str, Logger]]
+            If None, output using `print`, otherwise, log to the log with this
+            name (if string) or the given `Logger` instance at DEBUG level.
+            Note that if logging is used, `single_line` will be set to `False`.
         """
         self._msg = msg
         self._prn: Callable[[str, str, bool], None]  # (msg: str, end: str, flush: bool)
-        if log_name is not None:
-            l = logging.getLogger(log_name)
+        if log is not None:
+            if isinstance(log, Logger):
+                l = log
+            else:
+                l = logging.getLogger(log)
+            single_line = False
             self._prn = lambda msg, end, flush: l.debug(msg)
         else:
             self._prn = lambda msg, end, flush: print(msg, end=end, flush=flush)
