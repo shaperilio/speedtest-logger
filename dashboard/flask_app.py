@@ -34,14 +34,26 @@ _all_data: Dict[str, ColumnDataSource] = {}
 
 
 def _data_grabber():
+    """
+    Data loader; runs on separate thread. NOTE: if the app is run with
+    `--reload`, you will get multiple threads.
+    """
     global _all_data
-    with TimeIt('`proc_results` (in a thread)', single_line=False):
-        _all_data = proc_results(span_hrs=None)
-    config.refresh()
-    time.sleep(config.data_load_interval_min*60)
+    time.sleep(3)  # need to wait until the app starts.
+    while True:
+        try:
+            with app.app_context():
+                # Needs this context to use the app logger :/
+                with TimeIt('`proc_results` (in a thread)', log=app.logger):
+                    _all_data = proc_results(span_hrs=None)
+        except Exception as e:
+            app.logger.error(f'Failed to load data:\n{e}')
+        config.refresh()
+        app.logger.debug(f'Waiting {config.data_load_interval_min:.1f} minutes to read data again.')
+        time.sleep(config.data_load_interval_min*60)
 
 
-t = Thread(target=_data_grabber, daemon=True)
+t = Thread(target=_data_grabber, daemon=True, name='_data_grabber')
 t.start()
 
 
