@@ -14,15 +14,15 @@ from .data import down_up_by_val
 _l = logging.getLogger(__name__)
 
 
-def line_dot(fig: figure,
-             source: ColumnDataSource,
-             *,
-             x: str,
-             y: str,
-             legend_label: str,
-             color: str,
-             dashed: bool,
-             ) -> Scatter:
+def _line_dot(fig: figure,
+              source: ColumnDataSource,
+              *,
+              x: str,
+              y: str,
+              legend_label: str,
+              color: str,
+              dashed: bool,
+              ) -> Scatter:
     if dashed:
         line_dash = 'dashed'
     else:
@@ -54,10 +54,10 @@ def down_up(sources: Dict[str, ColumnDataSource]) -> str:
     for nickname, source in sources.items():
         c = next(color)
         dots.extend([
-            line_dot(fig, source, x='date', y='download_mbps',
-                     legend_label=nickname, color=c, dashed=False),
-            line_dot(fig, source, x='date', y='upload_mbps',
-                     legend_label=nickname, color=c, dashed=True)
+            _line_dot(fig, source, x='date', y='download_mbps',
+                      legend_label=nickname, color=c, dashed=False),
+            _line_dot(fig, source, x='date', y='upload_mbps',
+                      legend_label=nickname, color=c, dashed=True)
         ])
 
     hover = HoverTool(
@@ -97,10 +97,10 @@ def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
         source.data['hour']
         c = next(color)
         dots.extend([
-            line_dot(fig, source, x='hour', y='download_mbps_mean',
-                     legend_label=nickname, color=c, dashed=False),
-            line_dot(fig, source, x='hour', y='upload_mbps_mean',
-                     legend_label=nickname, color=c, dashed=True)
+            _line_dot(fig, source, x='hour', y='download_mbps_mean',
+                      legend_label=nickname, color=c, dashed=False),
+            _line_dot(fig, source, x='hour', y='upload_mbps_mean',
+                      legend_label=nickname, color=c, dashed=True)
         ])
 
     hover = HoverTool(
@@ -122,6 +122,7 @@ def down_up_by_weekday(sources: Dict[str, ColumnDataSource]) -> str:
     fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below', tools=[])
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
     fig.xaxis.axis_label = 'Weekday'
+    fig
     ticks = {0: 'Mon',
              1: 'Tue',
              2: 'Wed',
@@ -139,10 +140,10 @@ def down_up_by_weekday(sources: Dict[str, ColumnDataSource]) -> str:
         source.data['weekday']
         c = next(color)
         dots.extend([
-            line_dot(fig, source, x='weekday', y='download_mbps_mean',
-                     legend_label=nickname, color=c, dashed=False),
-            line_dot(fig, source, x='weekday', y='upload_mbps_mean',
-                     legend_label=nickname, color=c, dashed=True)
+            _line_dot(fig, source, x='weekday', y='download_mbps_mean',
+                      legend_label=nickname, color=c, dashed=False),
+            _line_dot(fig, source, x='weekday', y='upload_mbps_mean',
+                      legend_label=nickname, color=c, dashed=True)
         ])
 
     hover = HoverTool(
