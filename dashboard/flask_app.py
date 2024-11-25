@@ -14,6 +14,20 @@ from .plots import (down_up,
                     down_up_by_weekday,)
 
 from utils.timing import TimeIt
+
+
+from logging.config import dictConfig
+
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s: %(message)s',
+    }},
+    'root': {
+        'level': 'DEBUG',
+    }
+})
+
 app = Flask(__name__)
 
 _all_data: Dict[str, ColumnDataSource] = {}
@@ -44,9 +58,9 @@ def _get_plot_hrs() -> int:
 @app.route('/')
 @app.route('/log')
 def main():
-    with TimeIt('`filter`'):
+    with TimeIt('`filter`', log=app.logger):
         filtered = filter(_all_data, _get_plot_hrs())
-    with TimeIt('`smooth`'):
+    with TimeIt('`smooth`', log=app.logger):
         smoothed = smooth(filtered)
     return down_up(smoothed)
 

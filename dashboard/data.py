@@ -1,5 +1,6 @@
 from typing import List, Sequence, Dict, Tuple, Any, Optional, cast
 import json
+from flask import current_app as app
 from collections import defaultdict
 from datetime import datetime
 
@@ -24,7 +25,7 @@ def proc_results(span_hrs: Optional[int]) -> Dict[str, ColumnDataSource]:
     """Returns a `ColumnDataSource` for each interface, keyed by nickname."""
     config.refresh()
     filename = config.results_db
-    with TimeIt('Opening JSON results file', log_name=None):
+    with TimeIt('Opening JSON results file', log=app.logger):
         with open(filename, 'r') as f:
             results: List[Dict[str, Any]] = json.loads(f.read())
     results = list(reversed(results))
