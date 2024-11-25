@@ -43,7 +43,7 @@ def _line_dot(fig: figure,
     return d
 
 
-def down_up(sources: Dict[str, ColumnDataSource]) -> str:
+def log_plot(sources: Dict[str, ColumnDataSource]) -> str:
     fig = figure(height=500, width=1500, toolbar_location=None,
                  x_axis_type='datetime', x_axis_location='below',
                  sizing_mode='stretch_width', tools=[])
@@ -83,7 +83,7 @@ def down_up(sources: Dict[str, ColumnDataSource]) -> str:
     return file_html(fig, CDN, 'Speedtest log')
 
 
-def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
+def hourly_plot(sources: Dict[str, ColumnDataSource]) -> str:
     fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below', tools=[])
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
     fig.xaxis.axis_label = 'Hour of day'
@@ -118,7 +118,7 @@ def down_up_by_hour(sources: Dict[str, ColumnDataSource]) -> str:
     return file_html(fig, CDN, 'Speedtest log')
 
 
-def down_up_by_weekday(sources: Dict[str, ColumnDataSource]) -> str:
+def daily_plot(sources: Dict[str, ColumnDataSource]) -> str:
     fig = figure(height=800, width=800, toolbar_location=None, x_axis_location='below', tools=[])
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
     fig.xaxis.axis_label = 'Weekday'

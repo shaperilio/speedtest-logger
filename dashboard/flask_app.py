@@ -9,9 +9,9 @@ import config
 from .data import (proc_results,
                    filter,
                    smooth,)
-from .plots import (down_up,
-                    down_up_by_hour,
-                    down_up_by_weekday,)
+from .plots import (log_plot,
+                    hourly_plot,
+                    daily_plot,)
 
 from utils.timing import TimeIt
 
@@ -74,21 +74,21 @@ def main():
         filtered = filter(_all_data, _get_plot_hrs('log'))
     with TimeIt('`smooth`', log=app.logger):
         smoothed = smooth(filtered)
-    return down_up(smoothed)
+    return log_plot(smoothed)
 
 
 @app.route('/hourly')
 def hourly():
     filtered = filter(_all_data, _get_plot_hrs('hourly'))
     smoothed = smooth(filtered)
-    return down_up_by_hour(smoothed)
+    return hourly_plot(smoothed)
 
 
 @app.route('/daily')
 def daily():
     filtered = filter(_all_data, _get_plot_hrs('daily'))
     smoothed = smooth(filtered)
-    return down_up_by_weekday(smoothed)
+    return daily_plot(smoothed)
 
 
 @app.route('/favicon.ico')
