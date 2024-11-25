@@ -77,18 +77,31 @@ def main():
     return log_plot(smoothed)
 
 
+def _time_pretty(hrs: int) -> str:
+    if hrs < 24:
+        return f'{hrs:d} hours'
+    else:
+        days = hrs/24
+        if days == int(days):
+            return f'{days:.0f} days'
+        else:
+            return f'{days:1.f} days'
+
+
 @app.route('/hourly')
 def hourly():
-    filtered = filter(_all_data, _get_plot_hrs('hourly'))
+    hrs = _get_plot_hrs('hourly')
+    filtered = filter(_all_data, hrs)
     smoothed = smooth(filtered)
-    return hourly_plot(smoothed)
+    return hourly_plot(smoothed, title=f'Last {_time_pretty(hrs)}')
 
 
 @app.route('/daily')
 def daily():
-    filtered = filter(_all_data, _get_plot_hrs('daily'))
+    hrs = _get_plot_hrs('daily')
+    filtered = filter(_all_data, hrs)
     smoothed = smooth(filtered)
-    return daily_plot(smoothed)
+    return daily_plot(smoothed, title=f'Last {_time_pretty(hrs)}')
 
 
 @app.route('/favicon.ico')
