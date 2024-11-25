@@ -3,7 +3,7 @@ import itertools
 import logging
 
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, HoverTool, Scatter, OpenURL, TapTool
+from bokeh.models import ColumnDataSource, HoverTool, Scatter, OpenURL, TapTool, Legend
 from bokeh.palettes import Category10_10 as palette
 from bokeh.resources import CDN
 from bokeh.embed import file_html
@@ -19,7 +19,6 @@ def _line_dot(fig: figure,
               *,
               x: str,
               y: str,
-              legend_label: str,
               color: str,
               dashed: bool,
               ) -> Scatter:
@@ -30,16 +29,12 @@ def _line_dot(fig: figure,
     fig.line(x=x, y=y, source=source,
              line_width=2,
              line_color=color,
-             legend_label=legend_label,
-             line_dash=line_dash,
-             )
+             line_dash=line_dash)
     d = fig.scatter(x=x, y=y, source=source,
                     size=6,
                     fill_color='white',
                     line_width=2,
-                    line_color=color,
-                    legend_label=legend_label,
-                    )
+                    line_color=color)
     return d
 
 
@@ -50,15 +45,20 @@ def log_plot(sources: Dict[str, ColumnDataSource]) -> str:
     fig.yaxis.axis_label = 'Transfer rate (Mbps)'
 
     dots: List[Scatter] = []
+    legend_items: Dict[str, List[Scatter]] = {}
     color = itertools.cycle(palette)
     for nickname, source in sources.items():
         c = next(color)
         dots.extend([
             _line_dot(fig, source, x='date', y='download_mbps',
-                      legend_label=nickname, color=c, dashed=False),
+                      color=c, dashed=False),
             _line_dot(fig, source, x='date', y='upload_mbps',
-                      legend_label=nickname, color=c, dashed=True)
+                      color=c, dashed=True)
         ])
+        legend_items[nickname] = [dots[-1]]
+
+    legend = Legend(items=list(legend_items.items()), location='left')
+    fig.add_layout(legend, 'center')
 
     hover = HoverTool(
         tooltips=[
@@ -93,16 +93,21 @@ def hourly_plot(sources: Dict[str, ColumnDataSource], title: str) -> str:
     sources = down_up_by_val(sources, 'hour')
 
     dots: List[Scatter] = []
+    legend_items: Dict[str, List[Scatter]] = {}
     color = itertools.cycle(palette)
     for nickname, source in sources.items():
         source.data['hour']
         c = next(color)
         dots.extend([
             _line_dot(fig, source, x='hour', y='download_mbps_mean',
-                      legend_label=nickname, color=c, dashed=False),
+                      color=c, dashed=False),
             _line_dot(fig, source, x='hour', y='upload_mbps_mean',
-                      legend_label=nickname, color=c, dashed=True)
+                      color=c, dashed=True)
         ])
+        legend_items[nickname] = [dots[-1]]
+
+    legend = Legend(items=list(legend_items.items()), location='center', orientation='horizontal')
+    fig.add_layout(legend, 'below')
 
     hover = HoverTool(
         tooltips=[
@@ -137,16 +142,21 @@ def daily_plot(sources: Dict[str, ColumnDataSource], title: str) -> str:
     sources = down_up_by_val(sources, 'weekday')
 
     dots: List[Scatter] = []
+    legend_items: Dict[str, List[Scatter]] = {}
     color = itertools.cycle(palette)
     for nickname, source in sources.items():
         source.data['weekday']
         c = next(color)
         dots.extend([
             _line_dot(fig, source, x='weekday', y='download_mbps_mean',
-                      legend_label=nickname, color=c, dashed=False),
+                      color=c, dashed=False),
             _line_dot(fig, source, x='weekday', y='upload_mbps_mean',
-                      legend_label=nickname, color=c, dashed=True)
+                      color=c, dashed=True)
         ])
+        legend_items[nickname] = [dots[-1]]
+
+    legend = Legend(items=list(legend_items.items()), location='center', orientation='horizontal')
+    fig.add_layout(legend, 'below')
 
     hover = HoverTool(
         tooltips=[
