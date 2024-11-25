@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, Dict
 
 test_interval_min: float = 20
 """How often to run the speed test. Note there's a 10 second resolution."""
@@ -45,12 +45,15 @@ n_attempts: int = 5
 """Number of times to execute `speedtest` while the return code is not 0. Must be at least 1."""
 assert n_attempts > 0
 
-plot_hrs = 24
+plot_hrs: Dict[str, int] = {'log': 24,
+                            'daily': 24 * 28,
+                            'hourly': 24 * 28
+                            }
 """
-Maximum number of hours of results to to show on the plot by default.
+Maximum number of hours of results to to show on the plot by default, keyed by endpoint.
 Changes to this only take effect at startup.
 """
-assert plot_hrs > 0
+assert all(plot_hrs.values()) > 0
 
 hourly_plot_days = 10
 """

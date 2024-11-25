@@ -57,13 +57,13 @@ t = Thread(target=_data_grabber, daemon=True, name='_data_grabber')
 t.start()
 
 
-def _get_plot_hrs() -> int:
+def _get_plot_hrs(endpoint: str) -> int:
     if 'days' in request.args.keys():
         plot_hrs = int(float(request.args['days'])*24)
     elif 'hours' in request.args.keys():
         plot_hrs = int(float(request.args['hours']))
     else:
-        plot_hrs = config.plot_hrs
+        plot_hrs = config.plot_hrs[endpoint]
     return plot_hrs
 
 
@@ -71,7 +71,7 @@ def _get_plot_hrs() -> int:
 @app.route('/log')
 def main():
     with TimeIt('`filter`', log=app.logger):
-        filtered = filter(_all_data, _get_plot_hrs())
+        filtered = filter(_all_data, _get_plot_hrs('log'))
     with TimeIt('`smooth`', log=app.logger):
         smoothed = smooth(filtered)
     return down_up(smoothed)
@@ -79,14 +79,14 @@ def main():
 
 @app.route('/hourly')
 def hourly():
-    filtered = filter(_all_data, _get_plot_hrs())
+    filtered = filter(_all_data, _get_plot_hrs('hourly'))
     smoothed = smooth(filtered)
     return down_up_by_hour(smoothed)
 
 
 @app.route('/daily')
 def daily():
-    filtered = filter(_all_data, _get_plot_hrs())
+    filtered = filter(_all_data, _get_plot_hrs('daily'))
     smoothed = smooth(filtered)
     return down_up_by_weekday(smoothed)
 
