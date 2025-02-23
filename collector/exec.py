@@ -117,13 +117,15 @@ def _append_result(result: dict) -> None:
 def _record(interface: Optional[str], nickname: Optional[str]) -> None:
     if interface is None:
         name = 'all'
-        _l.info('Running test without specifying interface...')
+        info = 'Running test without specifying interface...'
     else:
         name = interface
-        _l.info(f'Running test on interface "{name}", a.k.a. "{nickname}"...')
+        info = f'Running test on interface "{name}", a.k.a. "{nickname}"...'
 
     if not _is_time_to_test(name):
         return
+
+    _l.info(info)
 
     result = _run(interface, nickname)
     _append_result(result)
